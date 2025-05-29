@@ -1,0 +1,46 @@
+package view
+
+import "github.com/edutko/crypto-fails/internal/view/component"
+
+templ RegistrationForm() {
+<!DOCTYPE html>
+<html>
+@component.Head()
+<body>
+<h1>$5wrench Cloud Storage</h1>
+<h2>So secure, they'll have to beat your secrets out of you!<sup><a href="https://xkcd.com/538/">1</a></sup></h2>
+
+<div id="registrationForm">
+<h3>Register</h3>
+<form action="/register" method="post">
+
+<div class="form-row">
+<label for="username">Username:</label>
+<input type="text" name="username" id="username" required />
+</div>
+
+<div class="form-row">
+<label for="password">Password:</label>
+<input type="password" name="password" id="password" required />
+</div>
+
+<div class="form-row">
+<label for="realname">Real name:</label>
+<input type="text" name="realname" id="realname" />
+</div>
+
+<div class="form-row">
+<label for="email">Email address:</label>
+<input type="text" name="email" id="email" />
+</div>
+
+<div class="form-row">
+<input type="submit" id="submit" value="Register" />
+</div>
+
+</form>
+</div>
+
+</body>
+</html>
+}

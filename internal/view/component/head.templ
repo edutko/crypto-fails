@@ -1,0 +1,11 @@
+package component
+
+import "github.com/edutko/crypto-fails/internal/info"
+
+templ Head() {
+<head>
+  <title>$5wrench Cloud Storage</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <meta name="version" content={info.GetAppInfo().Version} />
+</head>
+}

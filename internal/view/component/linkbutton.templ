@@ -1,0 +1,12 @@
+package component
+
+templ LinkButton(method, target, text, title string, values map[string]string) {
+<form method={method} action={templ.SafeURL(target)} class="inline">
+for k, v := range values {
+  <input type="hidden" name={k} value={v} />
+}
+  <button type="submit" name="submit" class="link-button" title={title}>
+    {text}
+  </button>
+</form>
+}

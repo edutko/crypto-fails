@@ -1,0 +1,33 @@
+package view
+
+import (
+	"github.com/edutko/crypto-fails/internal/auth"
+    "github.com/edutko/crypto-fails/internal/view/component"
+)
+
+templ Admin() {
+<!DOCTYPE html>
+<html>
+@component.Head()
+<body>
+<h1>$5wrench Cloud Storage</h1>
+<h2>So secure, they'll have to beat your secrets out of you!<sup><a href="https://xkcd.com/538/">1</a></sup></h2>
+
+<div id="content">
+<div id="navbar">
+if s := auth.GetCurrentSession(ctx); s != nil {
+@component.SideMenu(*s)
+}
+</div>
+
+<div id="content-main">
+<h3>Administration</h3>
+<p>
+<h2><center><blink>UNDER CONSTRUCTION</blink></center></h2>
+</p>
+</div>
+</div>
+
+</body>
+</html>
+}

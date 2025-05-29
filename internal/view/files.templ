@@ -1,0 +1,57 @@
+package view
+
+import (
+	"github.com/edutko/crypto-fails/internal/auth"
+    "github.com/edutko/crypto-fails/internal/view/component"
+)
+
+templ MyFiles(items [][]string, align []string) {
+<!DOCTYPE html>
+<html>
+@component.Head()
+<body>
+<h1>$5wrench Cloud Storage</h1>
+<h2>So secure, they'll have to beat your secrets out of you!<sup><a href="https://xkcd.com/538/">1</a></sup></h2>
+
+<div id="content">
+<div id="navbar">
+if s := auth.GetCurrentSession(ctx); s != nil {
+@component.SideMenu(*s)
+}
+</div>
+
+<div id="content-main">
+<h3>My Files</h3>
+<table id="files-table">
+<thead>
+  <th class={align[0]}>Name</th>
+  <th class={align[1]}>Size</th>
+  <th class={align[2]}>Uploaded</th>
+  <th class="centered">Actions</th>
+</thead>
+<tbody>
+for _, row := range items{
+    <tr>
+    for i, itm := range row {
+        <td class={align[i]}>{itm}</td>
+    }
+        <td class="centered">
+        <a href={templ.SafeURL("/download?key="+row[0])} class="link-button" title="Download">⬇︎</a>
+        @component.LinkButton("post", "/share", "➦", "Share", map[string]string{"key": row[0]})
+        </td>
+    </tr>
+}
+</tbody>
+</table>
+
+<br />
+<form action="/upload" method="post" enctype="multipart/form-data">
+<input type="file" id="file" name="file" required />
+<input type="submit" id="submit" value="Upload" />
+</form>
+</div>
+</div>
+
+</body>
+</html>
+}
