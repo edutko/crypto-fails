@@ -1,0 +1,27 @@
+package component
+
+templ LoginForm() {
+<div id="loginForm">
+<form action="/login" method="post">
+
+<div class="formRow">
+<label for="username">Username:</label>
+<input type="text" name="username" id="username">
+</div>
+
+<div class="formRow">
+<label for="password">Password:</label>
+<input type="password" name="password" id="password">
+</div>
+
+<div class="formRow">
+<input type="submit" value="Log in" />
+</div>
+</form>
+
+<div class="formRow">
+<a href="/register">Register</a>
+</div>
+
+</div>
+}

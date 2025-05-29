@@ -1,0 +1,20 @@
+package component
+
+import "github.com/edutko/crypto-fails/internal/auth"
+
+templ SideMenu(s auth.Session) {
+<div id="sideMenu">
+
+<h4>Hello, { s.Username }!</h4>
+<ul>
+<li><a href="/">Home</a></li>
+if s.IsAdmin {
+<li><a href="/admin">Admin</a></li>
+}
+<li><a href="/files">Files</a></li>
+<li><a href="/shares">Shares</a></li>
+<li><a href="/logout">Log out</a></li>
+</ul>
+
+</div>
+}
