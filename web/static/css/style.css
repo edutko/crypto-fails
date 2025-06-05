@@ -94,6 +94,13 @@ th.right-justified, td.right-justified {
     flex-grow: 1;
 }
 
+#content-email {
+    flex-grow: 1;
+    color: black;
+    background-color: #e0e0e0;
+    padding: 0 1em 1em 1em;
+}
+
 #files-table {
     min-width: 500px;
 }
@@ -141,7 +148,7 @@ th.right-justified, td.right-justified {
     margin-top: 0;
 }
 
-#registrationForm {
+#registrationForm, #forgotPasswordForm, #resetPasswordForm {
     max-width: 25em;
     margin: 1em;
     padding: 0;
@@ -184,6 +191,13 @@ th.right-justified, td.right-justified {
     color: #666666;
 }
 
+.text-row {
+    height: 2em;
+    padding: .5em;
+    display: flex;
+    justify-content: space-between;
+}
+
 
 .inline {
     display: inline;
@@ -200,4 +214,8 @@ th.right-justified, td.right-justified {
 
 .link-button:focus {
     outline: none;
+}
+
+.error-message {
+    color: #ff9900;
 }

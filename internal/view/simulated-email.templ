@@ -1,0 +1,36 @@
+package view
+
+import (
+    "net/url"
+
+    "github.com/edutko/crypto-fails/internal/view/component"
+)
+
+templ SimulatedEmail(emailAddr, username, nonce string) {
+<!DOCTYPE html>
+<html>
+@component.Head()
+<body>
+<h1>$5wrench Cloud Storage</h1>
+<h2>So secure, they'll have to beat your secrets out of you!<sup><a href="https://xkcd.com/538/">1</a></sup></h2>
+
+<div id="content">
+<div id="content-email">
+<h3>You've got mail!</h3>
+<p>
+<b>From:</b> support@five-dollar-wrench.com<br/>
+<b>To:</b> {emailAddr}<br/>
+<b>Subject:</b> Password reset link
+</p>
+
+<p>Please click this link or copy/paste it into your browser to complete the password reset process.</p>
+<p>
+<a href={templ.SafeURL("/reset-password?username="+url.QueryEscape(username)+"&nonce="+url.QueryEscape(nonce))}>
+https://five-dollar-wrench.com/reset-password?{"username="+url.QueryEscape(username)+"&nonce="+url.QueryEscape(nonce)}</a>
+</p>
+</div>
+</div>
+
+</body>
+</html>
+}
