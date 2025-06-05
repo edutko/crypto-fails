@@ -9,11 +9,14 @@ type User struct {
 	Email        string   `json:"email,omitempty"`
 	RealName     string   `json:"realName,omitempty"`
 	Roles        []string `json:"roles"`
+
+	PasswordResetNonce string `json:"-"`
 }
 
 func (u User) WithoutSecrets() User {
 	u.Password = ""
 	u.PasswordHash = ""
+	u.PasswordResetNonce = ""
 	return u
 }
 

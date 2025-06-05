@@ -15,6 +15,7 @@ import (
 	"github.com/edutko/crypto-fails/internal/auth"
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto"
+	"github.com/edutko/crypto-fails/internal/crypto/random"
 	"github.com/edutko/crypto-fails/internal/info"
 	m "github.com/edutko/crypto-fails/internal/middleware"
 	"github.com/edutko/crypto-fails/internal/route"
@@ -27,6 +28,8 @@ import (
 func main() {
 	info.Initialize(Version)
 	conf := config.Load()
+
+	random.SetWeakPRNG(conf.WeakPRNGAlgorithm)
 
 	if err := stores.Initialize(conf.StorageRootDir, conf.FileEncryptionMode); err != nil {
 		log.Fatal(err)
@@ -54,6 +57,8 @@ func main() {
 	mux.HandleFunc("/login", route.LoginUI)
 	mux.HandleFunc("/logout", route.Logout)
 	mux.HandleFunc("/register", route.Register)
+	mux.HandleFunc("/forgot-password", route.ForgotPassword)
+	mux.HandleFunc("/reset-password", route.ForgotPassword)
 
 	mux.HandleFunc("GET /{$}", m.MaybeAuthenticated(route.Index))
 	mux.HandleFunc("GET /admin", m.RequireAdmin(route.Admin))

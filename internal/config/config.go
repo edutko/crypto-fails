@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/edutko/crypto-fails/internal/crypto"
+	"github.com/edutko/crypto-fails/internal/crypto/weakprng"
 )
 
 var cfg = Config{
@@ -18,6 +19,7 @@ var cfg = Config{
 	FileEncryptionMode:  crypto.ModeCTR,
 	LeakEncryptedFiles:  true,
 	TweakEncryptedFiles: true,
+	WeakPRNGAlgorithm:   weakprng.XORShift128p,
 
 	SessionDuration:   6 * time.Hour,
 	ShareLinkDuration: 15 * 24 * time.Hour,
@@ -58,6 +60,11 @@ func Load() Config {
 		cfg.FileEncryptionMode = crypto.ModeGCM
 	}
 
+	prng := os.Getenv("WEAK_PRNG")
+	if prng != "" {
+		cfg.WeakPRNGAlgorithm = weakprng.Algorithm(prng)
+	}
+
 	cfg.loaded = true
 
 	return cfg
@@ -84,10 +91,11 @@ type Config struct {
 	StorageRootDir string `json:"storageRootDir"`
 	WebRootDir     string `json:"webRootDir"`
 
-	FileSizeLimit       int64       `json:"fileSizeLimit"`
-	FileEncryptionMode  crypto.Mode `json:"fileEncryptionMode"`
-	LeakEncryptedFiles  bool        `json:"leakEncryptedFiles"`
-	TweakEncryptedFiles bool        `json:"tweakEncryptedFiles"`
+	FileSizeLimit       int64              `json:"fileSizeLimit"`
+	FileEncryptionMode  crypto.Mode        `json:"fileEncryptionMode"`
+	LeakEncryptedFiles  bool               `json:"leakEncryptedFiles"`
+	TweakEncryptedFiles bool               `json:"tweakEncryptedFiles"`
+	WeakPRNGAlgorithm   weakprng.Algorithm `json:"weakPRNGAlgorithm"`
 
 	SessionDuration   time.Duration `json:"sessionDuration"`
 	ShareLinkDuration time.Duration `json:"shareLinkDuration"`
