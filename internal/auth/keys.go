@@ -60,6 +60,11 @@ func GetShareLinkSecret() []byte {
 }
 
 func InitializeKeys() error {
+	ids, _ := keyStore().ListKeysWithPrefix(constants.JWTSigningKIDPrefix)
+	if len(ids) > 0 {
+		return nil
+	}
+
 	ecKid := uuid.Must(uuid.NewRandom())
 	_, _, ecPub, err := keys.GenerateECDSAKeyPair()
 	if err != nil {
