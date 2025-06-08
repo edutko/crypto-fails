@@ -2,7 +2,6 @@ package share
 
 import (
 	"bytes"
-	"fmt"
 	"net/url"
 	"testing"
 	"time"
@@ -41,7 +40,7 @@ func TestParseLink(t *testing.T) {
 	}
 }
 
-func TestLink_Encode(t *testing.T) {
+func TestLink_QueryString(t *testing.T) {
 	testCases := []struct {
 		name          string
 		link          Link
@@ -62,24 +61,24 @@ func TestLink_Encode(t *testing.T) {
 	}
 }
 
-func TestLink_Sign(t *testing.T) {
+func TestNewSignedLink(t *testing.T) {
 	secret := bytes.Repeat([]byte{0x55}, 32)
 	testCases := []struct {
-		name          string
-		link          Link
-		expectedQuery string
+		name         string
+		key          string
+		exp          time.Time
+		expectedLink Link
 	}{
-		{"basic", NewLink("abc/123.txt", time.Unix(1863795600, 0)),
-			"exp=1863795600&key=abc%2F123.txt&sig=GgoJOYB9kHcVl6ElbXP7lAFQLNdGVTCcZK-P67qkZmE"},
-		{"no expiration", NewLink("abc/123.txt", DoesNotExpire),
-			"key=abc%2F123.txt&sig=g55e9vBCXDdXwHVNq3gB7jmnwq4lgJKYbw_h1_I97oU"},
+		{"basic", "abc/123.txt", time.Unix(1863795600, 0),
+			Link{Key: "abc/123.txt", Expiration: time.Unix(1863795600, 0).UTC(), Signature: "GgoJOYB9kHcVl6ElbXP7lAFQLNdGVTCcZK-P67qkZmE"}},
+		{"no expiration", "abc/123.txt", DoesNotExpire,
+			Link{Key: "abc/123.txt", Signature: "g55e9vBCXDdXwHVNq3gB7jmnwq4lgJKYbw_h1_I97oU"}},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			l := tc.link.SignedQueryString(secret)
-
-			assert.Equal(t, tc.expectedQuery, l)
+			l := NewSignedLink(tc.key, tc.exp, secret)
+			assert.Equal(t, tc.expectedLink, l)
 		})
 	}
 }
@@ -102,7 +101,6 @@ func TestLink_Verify(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Println(tc.link.SignedQueryString(secret))
 			assert.Equal(t, tc.expectedErr, tc.link.Verify(secret))
 		})
 	}

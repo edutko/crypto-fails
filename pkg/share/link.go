@@ -34,6 +34,15 @@ func NewLink(key string, expiration time.Time) Link {
 	}
 }
 
+func NewSignedLink(key string, expiration time.Time, secret []byte) Link {
+	l := Link{
+		Key:        key,
+		Expiration: expiration.UTC(),
+	}
+	l.Signature = base64.RawURLEncoding.EncodeToString(signLink(l, secret))
+	return l
+}
+
 func ParseLink(v url.Values) Link {
 	var exp time.Time
 	if v.Get("exp") == "" {
@@ -54,12 +63,6 @@ func (l Link) QueryString() string {
 	return urlValues(l).Encode()
 }
 
-func (l Link) SignedQueryString(secret []byte) string {
-	sig := l.signWithSecret(secret)
-	l.Signature = base64.RawURLEncoding.EncodeToString(sig)
-	return urlValues(l).Encode()
-}
-
 func (l Link) Verify(secret []byte) error {
 	if l.Signature == "" {
 		return ErrNoSignature
@@ -70,8 +73,8 @@ func (l Link) Verify(secret []byte) error {
 		return ErrInvalidSignature
 	}
 
-	computedSig := l.signWithSecret(secret)
-	if !bytes.Equal(sig, computedSig[:]) {
+	computedSig := signLink(l, secret)
+	if !bytes.Equal(sig, computedSig) {
 		return ErrInvalidSignature
 	}
 
@@ -82,7 +85,7 @@ func (l Link) Verify(secret []byte) error {
 	return nil
 }
 
-func (l Link) signWithSecret(secret []byte) []byte {
+func signLink(l Link, secret []byte) []byte {
 	signedValues := urlValues(l)
 	signedValues.Del("sig")
 	decoded, _ := url.QueryUnescape(signedValues.Encode())

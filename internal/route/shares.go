@@ -95,11 +95,11 @@ func DeleteShare(w http.ResponseWriter, r *http.Request) {
 
 func newSignedLink(username, relativeKey string) (string, error) {
 	exp := time.Now().Add(config.ShareLinkDuration())
-	l := share.NewLink(path.Join(username, relativeKey), exp)
+	l := share.NewSignedLink(path.Join(username, relativeKey), exp, auth.GetShareLinkSecret())
 
 	err := stores.ShareStore().Put(path.Join(username, random.String(6)), l)
 
-	return l.SignedQueryString(auth.GetShareLinkSecret()), err
+	return l.QueryString(), err
 }
 
 func listShares(username string) ([]share.Link, error) {
