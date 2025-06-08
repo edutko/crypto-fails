@@ -23,5 +23,5 @@ func PostRegister(w http.ResponseWriter, r *http.Request) {
 		Password: r.Form.Get("password"),
 		RealName: r.Form.Get("realname"),
 		Email:    r.Form.Get("email"),
-	}, w)
+	}, w, true)
 }

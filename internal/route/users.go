@@ -22,7 +22,7 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		if err := requests.ParseJSONBody(r, &u); err != nil {
 			responses.BadRequest(w, err)
 		} else {
-			createUser(u, w)
+			createUser(u, w, false)
 		}
 
 	} else {
@@ -48,7 +48,7 @@ func getUsers(w http.ResponseWriter) {
 	responses.JSON(w, api.UsersResponse{Users: usernames})
 }
 
-func createUser(u user.User, w http.ResponseWriter) {
+func createUser(u user.User, w http.ResponseWriter, interactive bool) {
 	if u.Username == "" || u.Password == "" {
 		responses.BadRequestWithMessage(w, "username and password are required")
 		return
@@ -65,6 +65,7 @@ func createUser(u user.User, w http.ResponseWriter) {
 		return
 	}
 
+	password := u.Password
 	u.Password = ""
 	u.PasswordHash = ph
 
@@ -74,5 +75,9 @@ func createUser(u user.User, w http.ResponseWriter) {
 		return
 	}
 
-	responses.Created(w, path.Join("/api", "users", url.PathEscape(u.Username)))
+	if interactive {
+		interactiveLogin(w, u.Username, password)
+	} else {
+		responses.Created(w, path.Join("/api", "users", url.PathEscape(u.Username)))
+	}
 }
