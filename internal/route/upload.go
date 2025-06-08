@@ -8,19 +8,15 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
-	"github.com/edutko/crypto-fails/internal/share"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/stores"
+	"github.com/edutko/crypto-fails/pkg/share"
 )
 
-func Upload(w http.ResponseWriter, r *http.Request) {
+func PostUpload(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	if r.Method == http.MethodPost {
-		uploadFile(s.Username, w, r, true)
-	} else {
-		responses.MethodNotAllowed(w)
-	}
+	uploadFile(s.Username, w, r, true)
 }
 
 func uploadFile(namespace string, w http.ResponseWriter, r *http.Request, interactive bool) {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto/pkcs7"
-	"github.com/edutko/crypto-fails/internal/user/role"
+	"github.com/edutko/crypto-fails/pkg/user/role"
 )
 
 const CookieName = "auth"

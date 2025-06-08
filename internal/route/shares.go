@@ -1,9 +1,7 @@
 package route
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"path"
 	"strings"
@@ -13,13 +11,15 @@ import (
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
-	"github.com/edutko/crypto-fails/internal/share"
+	"github.com/edutko/crypto-fails/internal/route/requests"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/stores"
 	"github.com/edutko/crypto-fails/internal/view"
+	"github.com/edutko/crypto-fails/pkg/api"
+	"github.com/edutko/crypto-fails/pkg/share"
 )
 
-func MyShares(w http.ResponseWriter, r *http.Request) {
+func GetMyShares(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	prefix := s.Username + "/"
 	if r.Method != http.MethodGet {
@@ -29,93 +29,67 @@ func MyShares(w http.ResponseWriter, r *http.Request) {
 
 	if links, err := listShares(s.Username); err != nil {
 		responses.InternalServerError(w, err)
+
 	} else {
 		var tbl [][]string
 		for _, v := range links {
 			tbl = append(tbl, []string{strings.TrimPrefix(v.Key, prefix), v.Expiration.Format("2006-01-02")})
 		}
-
 		responses.RenderView(w, r.Context(), view.MyShares(tbl, []string{"left-justified", "centered"}))
 	}
 }
 
-func NewShare(w http.ResponseWriter, r *http.Request) {
+func PostShare(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	if r.Method == http.MethodPost {
-		if err := r.ParseForm(); err != nil {
-			responses.BadRequest(w, err)
-			return
-		}
+	key := r.PostFormValue("key")
+	if !strings.HasPrefix(path.Join(s.Username, key), s.Username+"/") {
+		responses.BadRequest(w, errors.New("invalid key"))
+		return
+	}
 
-		key := r.PostFormValue("key")
-		if !strings.HasPrefix(path.Join(s.Username, key), s.Username+"/") {
-			responses.BadRequest(w, errors.New("invalid key"))
-			return
-		}
-
-		if l, err := newSignedLink(s.Username, key); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.Plaintext(w, l)
-		}
-
+	if l, err := newSignedLink(s.Username, key); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.Plaintext(w, l)
 	}
 }
 
-func Shares(w http.ResponseWriter, r *http.Request) {
+func GetShares(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	if r.Method == http.MethodGet {
-		if links, err := listShares(s.Username); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.JSON(w, struct {
-				Links []share.Link `json:"links"`
-			}{links})
-		}
-
-	} else if r.Method == http.MethodPost {
-		b, err := io.ReadAll(r.Body)
-		if err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		var link share.Link
-		if err = json.Unmarshal(b, &link); err != nil {
-			responses.BadRequest(w, err)
-			return
-		}
-
-		l, err := newSignedLink(s.Username, link.Key)
-		if err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		responses.JSON(w, struct {
-			Link string `json:"link"`
-		}{l})
-
+	if links, err := listShares(s.Username); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.JSON(w, api.SharesResponse{Links: links})
 	}
 }
 
-func Share(w http.ResponseWriter, r *http.Request) {
+func PostShares(w http.ResponseWriter, r *http.Request) {
+	s := middleware.GetCurrentSession(r)
+
+	var link share.Link
+	if err := requests.ParseJSONBody(r, &link); err != nil {
+		responses.BadRequest(w, err)
+		return
+	}
+
+	// Don't trust the username or expiration in the request.
+	l, err := newSignedLink(s.Username, link.Key)
+	if err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	responses.JSON(w, l)
+}
+
+func DeleteShare(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	id := r.PathValue("id")
 
-	if r.Method == http.MethodDelete {
-		if _, err := stores.ShareStore().Delete(path.Join(s.Username, id)); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.NoContent(w)
-		}
-
+	if _, err := stores.ShareStore().Delete(path.Join(s.Username, id)); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.NoContent(w)
 	}
 }
 

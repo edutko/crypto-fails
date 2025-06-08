@@ -8,18 +8,19 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
-	"github.com/edutko/crypto-fails/internal/store/blob"
+	blobstore "github.com/edutko/crypto-fails/internal/store/blob"
 	"github.com/edutko/crypto-fails/internal/store/constants"
 	"github.com/edutko/crypto-fails/internal/store/kv"
+	"github.com/edutko/crypto-fails/pkg/blob"
 )
 
 type ObjectStore struct {
-	blobs blob.Store
+	blobs blobstore.Store
 	keys  kv.Store[[]byte]
 	mode  crypto.Mode
 }
 
-func NewObjectStore(blobs blob.Store, keys kv.Store[[]byte], mode crypto.Mode) (*ObjectStore, error) {
+func NewObjectStore(blobs blobstore.Store, keys kv.Store[[]byte], mode crypto.Mode) (*ObjectStore, error) {
 	return &ObjectStore{blobs, keys, mode}, nil
 }
 

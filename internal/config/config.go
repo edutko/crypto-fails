@@ -8,9 +8,10 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/crypto/weakprng"
+	"github.com/edutko/crypto-fails/pkg/app"
 )
 
-var cfg = Config{
+var cfg = app.Config{
 	ListenAddr:     "localhost:8080",
 	StorageRootDir: "data",
 	WebRootDir:     "web/static",
@@ -25,11 +26,11 @@ var cfg = Config{
 	ShareLinkDuration: 15 * 24 * time.Hour,
 }
 
-func Load() Config {
+func Load() app.Config {
 	lock.Lock()
 	defer lock.Unlock()
 
-	if cfg.loaded {
+	if cfgLoaded {
 		return cfg
 	}
 
@@ -65,7 +66,7 @@ func Load() Config {
 		cfg.WeakPRNGAlgorithm = weakprng.Algorithm(prng)
 	}
 
-	cfg.loaded = true
+	cfgLoaded = true
 
 	return cfg
 }
@@ -82,25 +83,9 @@ func ShareLinkDuration() time.Duration {
 	return cfg.ShareLinkDuration
 }
 
-func InitializeForTesting(c Config) {
+func InitializeForTesting(c app.Config) {
 	cfg = c
 }
 
-type Config struct {
-	ListenAddr     string `json:"listenAddr"`
-	StorageRootDir string `json:"storageRootDir"`
-	WebRootDir     string `json:"webRootDir"`
-
-	FileSizeLimit       int64              `json:"fileSizeLimit"`
-	FileEncryptionMode  crypto.Mode        `json:"fileEncryptionMode"`
-	LeakEncryptedFiles  bool               `json:"leakEncryptedFiles"`
-	TweakEncryptedFiles bool               `json:"tweakEncryptedFiles"`
-	WeakPRNGAlgorithm   weakprng.Algorithm `json:"weakPRNGAlgorithm"`
-
-	SessionDuration   time.Duration `json:"sessionDuration"`
-	ShareLinkDuration time.Duration `json:"shareLinkDuration"`
-
-	loaded bool
-}
-
 var lock sync.Mutex
+var cfgLoaded bool

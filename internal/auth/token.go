@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/edutko/crypto-fails/internal/config"
-	"github.com/edutko/crypto-fails/internal/user/role"
+	"github.com/edutko/crypto-fails/pkg/user/role"
 )
 
 var (

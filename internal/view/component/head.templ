@@ -1,11 +1,11 @@
 package component
 
-import "github.com/edutko/crypto-fails/internal/info"
+import "github.com/edutko/crypto-fails/internal/app"
 
 templ Head() {
 <head>
   <title>$5wrench Cloud Storage</title>
   <link rel="stylesheet" href="/static/css/style.css" />
-  <meta name="version" content={info.GetAppInfo().Version} />
+  <meta name="version" content={app.Version()} />
 </head>
 }

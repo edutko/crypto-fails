@@ -1,16 +1,16 @@
 package route
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"net/url"
 	"path"
 
 	"github.com/edutko/crypto-fails/internal/crypto"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/requests"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/stores"
-	"github.com/edutko/crypto-fails/internal/user"
+	"github.com/edutko/crypto-fails/pkg/api"
+	"github.com/edutko/crypto-fails/pkg/user"
 )
 
 func Users(w http.ResponseWriter, r *http.Request) {
@@ -18,17 +18,12 @@ func Users(w http.ResponseWriter, r *http.Request) {
 		getUsers(w)
 
 	} else if r.Method == http.MethodPost {
-		b, err := io.ReadAll(r.Body)
-		if err != nil {
-			responses.InternalServerError(w, err)
-		}
-
 		var u user.User
-		if err := json.Unmarshal(b, &u); err != nil {
+		if err := requests.ParseJSONBody(r, &u); err != nil {
 			responses.BadRequest(w, err)
+		} else {
+			createUser(u, w)
 		}
-
-		createUser(u, w)
 
 	} else {
 		responses.MethodNotAllowed(w)
@@ -50,10 +45,7 @@ func getUsers(w http.ResponseWriter) {
 		responses.InternalServerError(w, err)
 		return
 	}
-
-	responses.JSON(w, struct {
-		Users []string `json:"users"`
-	}{usernames})
+	responses.JSON(w, api.UsersResponse{Users: usernames})
 }
 
 func createUser(u user.User, w http.ResponseWriter) {

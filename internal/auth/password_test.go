@@ -7,7 +7,7 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/store/kv"
-	"github.com/edutko/crypto-fails/internal/user"
+	"github.com/edutko/crypto-fails/pkg/user"
 )
 
 func TestAuthenticateWithPassword(t *testing.T) {

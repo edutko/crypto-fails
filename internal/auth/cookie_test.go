@@ -14,10 +14,11 @@ import (
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto/pkcs7"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
+	"github.com/edutko/crypto-fails/pkg/app"
 )
 
 func TestCreateCookie(t *testing.T) {
-	config.InitializeForTesting(config.Config{
+	config.InitializeForTesting(app.Config{
 		SessionDuration: 1 * time.Hour,
 	})
 	now := time.Now()

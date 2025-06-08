@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/edutko/crypto-fails/internal/config"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/stores"
 )

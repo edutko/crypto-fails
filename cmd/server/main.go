@@ -12,21 +12,21 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/edutko/crypto-fails/internal/app"
 	"github.com/edutko/crypto-fails/internal/auth"
 	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
-	"github.com/edutko/crypto-fails/internal/info"
 	m "github.com/edutko/crypto-fails/internal/middleware"
 	"github.com/edutko/crypto-fails/internal/route"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/stores"
-	"github.com/edutko/crypto-fails/internal/user"
-	"github.com/edutko/crypto-fails/internal/user/role"
+	"github.com/edutko/crypto-fails/pkg/user"
+	"github.com/edutko/crypto-fails/pkg/user/role"
 )
 
 func main() {
-	info.Initialize(Version)
+	app.SetVersion(Version)
 	conf := config.Load()
 
 	random.SetWeakPRNG(conf.WeakPRNGAlgorithm)
@@ -54,20 +54,26 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 	mux.Handle("GET /.well-known/jwks.json", http.HandlerFunc(route.JWKS))
 
-	mux.HandleFunc("/login", route.LoginUI)
-	mux.HandleFunc("/logout", route.Logout)
-	mux.HandleFunc("/register", route.Register)
-	mux.HandleFunc("/forgot-password", route.ForgotPassword)
-	mux.HandleFunc("/reset-password", route.ForgotPassword)
+	mux.HandleFunc("GET /register", route.GetRegister)
+	mux.HandleFunc("POST /register", route.PostRegister)
 
-	mux.HandleFunc("GET /{$}", m.MaybeAuthenticated(route.Index))
-	mux.HandleFunc("GET /admin", m.RequireAdmin(route.Admin))
-	mux.HandleFunc("GET /download", m.MaybeAuthenticated(route.Download))
-	mux.HandleFunc("GET /files", m.Authenticated(route.MyFiles))
-	mux.HandleFunc("GET /keys/{id}", route.Pubkey)
-	mux.HandleFunc("GET /shares", m.Authenticated(route.MyShares))
-	mux.HandleFunc("POST /share", m.Authenticated(route.NewShare))
-	mux.HandleFunc("POST /upload", m.Authenticated(route.Upload))
+	mux.HandleFunc("GET /login", route.GetLoginUI)
+	mux.HandleFunc("POST /login", route.PostLoginUI)
+	mux.HandleFunc("/logout", route.Logout)
+
+	mux.HandleFunc("GET /forgot-password", route.GetForgotPassword)
+	mux.HandleFunc("POST /forgot-password", route.PostForgotPassword)
+	mux.HandleFunc("GET /reset-password", route.GetForgotPassword)
+	mux.HandleFunc("POST /reset-password", route.PostForgotPassword)
+
+	mux.HandleFunc("GET /{$}", m.MaybeAuthenticated(route.GetIndex))
+	mux.HandleFunc("GET /admin", m.RequireAdmin(route.GetAdmin))
+	mux.HandleFunc("GET /download", m.MaybeAuthenticated(route.GetDownload))
+	mux.HandleFunc("GET /files", m.Authenticated(route.GetMyFiles))
+	mux.HandleFunc("GET /keys/{id}", route.GetPubkey)
+	mux.HandleFunc("GET /shares", m.Authenticated(route.GetMyShares))
+	mux.HandleFunc("POST /share", m.Authenticated(route.PostShare))
+	mux.HandleFunc("POST /upload", m.Authenticated(route.PostUpload))
 
 	if conf.LeakEncryptedFiles {
 		fs := http.Dir(filepath.Join(conf.StorageRootDir, "files"))
@@ -77,18 +83,28 @@ func main() {
 		mux.Handle("PUT /vulns/tweak/{key...}", http.StripPrefix("/vulns/tweak/", http.HandlerFunc(route.TweakCiphertext)))
 	}
 
-	mux.HandleFunc("/api/login", route.LoginAPI)
+	mux.HandleFunc("POST /api/login", route.PostLoginAPI)
 	mux.HandleFunc("/api/logout", route.Logout)
 
-	mux.HandleFunc("/api/backups", m.Authenticated(route.Backups))
-	mux.HandleFunc("/api/backups/{id}", m.Authenticated(route.Backup))
-	mux.HandleFunc("/api/files", m.Authenticated(route.Files))
-	mux.HandleFunc("/api/files/{key}", m.Authenticated(route.File))
-	mux.HandleFunc("/api/jobs/{id}", m.Authenticated(route.Job))
-	mux.HandleFunc("/api/keys", m.Authenticated(route.Pubkeys))
-	mux.HandleFunc("/api/keys/{id}", m.MaybeAuthenticated(route.Pubkey))
-	mux.HandleFunc("/api/shares", m.Authenticated(route.Shares))
-	mux.HandleFunc("/api/shares/{id}", m.Authenticated(route.Share))
+	mux.HandleFunc("POST /api/backups", m.Authenticated(route.PostBackups))
+	mux.HandleFunc("GET /api/backups/{id}", m.Authenticated(route.GetBackup))
+	mux.HandleFunc("DELETE /api/backups/{id}", m.Authenticated(route.DeleteBackup))
+
+	mux.HandleFunc("GET /api/files", m.Authenticated(route.GetFiles))
+	mux.HandleFunc("POST /api/files", m.Authenticated(route.PostFiles))
+	mux.HandleFunc("GET /api/files/{key}", m.Authenticated(route.GetFile))
+	mux.HandleFunc("DELETE /api/files/{key}", m.Authenticated(route.DeleteFile))
+
+	mux.HandleFunc("GET /api/jobs/{id}", m.Authenticated(route.GetJob))
+
+	mux.HandleFunc("GET /api/keys", m.Authenticated(route.GetPubkeys))
+	mux.HandleFunc("POST /api/keys", m.Authenticated(route.PostPubkeys))
+	mux.HandleFunc("GET /api/keys/{id}", m.MaybeAuthenticated(route.GetPubkey))
+
+	mux.HandleFunc("GET /api/shares", m.Authenticated(route.GetShares))
+	mux.HandleFunc("POST /api/shares", m.Authenticated(route.PostShares))
+	mux.HandleFunc("DELETE /api/shares/{id}", m.Authenticated(route.DeleteShare))
+
 	mux.HandleFunc("/api/users", m.RequireAdmin(route.Users))
 	mux.HandleFunc("/api/users/{id}/keys", m.Authenticated(route.UserPubkeys))
 

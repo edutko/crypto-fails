@@ -20,7 +20,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/edutko/crypto-fails/internal/user/role"
+	"github.com/edutko/crypto-fails/pkg/user/role"
 )
 
 func TestNewToken(t *testing.T) {

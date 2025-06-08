@@ -7,11 +7,11 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/job"
-	"github.com/edutko/crypto-fails/internal/share"
 	"github.com/edutko/crypto-fails/internal/store/blob"
 	"github.com/edutko/crypto-fails/internal/store/encrypted"
 	"github.com/edutko/crypto-fails/internal/store/kv"
-	"github.com/edutko/crypto-fails/internal/user"
+	"github.com/edutko/crypto-fails/pkg/share"
+	"github.com/edutko/crypto-fails/pkg/user"
 )
 
 func Initialize(storageRootDir string, encryptionMode crypto.Mode) error {

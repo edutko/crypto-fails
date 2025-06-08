@@ -15,28 +15,23 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/job"
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
-	"github.com/edutko/crypto-fails/internal/store/blob"
 	"github.com/edutko/crypto-fails/internal/stores"
+	"github.com/edutko/crypto-fails/pkg/blob"
 )
 
-func Backups(w http.ResponseWriter, r *http.Request) {
+func PostBackups(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 
-	if r.Method == http.MethodPost {
-		if id, err := startBackup(s.Username); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.Created(w, path.Join("api", "backups", url.PathEscape(id), "status"))
-		}
-
+	if id, err := startBackup(s.Username); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.Created(w, path.Join("api", "backups", url.PathEscape(id), "status"))
 	}
 }
 
-func Backup(w http.ResponseWriter, r *http.Request) {
+func GetBackup(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	id := path.Clean(r.PathValue("id"))
 	if !strings.HasPrefix(id, s.Username+"/") {
@@ -44,39 +39,42 @@ func Backup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodGet {
-		j, err := stores.JobStore().Get(id)
-		if errors.Is(err, store.ErrNotFound) {
+	j, err := stores.JobStore().Get(id)
+	if errors.Is(err, store.ErrNotFound) {
+		responses.NotFound(w)
+		return
+	} else if err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	if j.Status() == job.StatusCompleted {
+		name := jobIdToFilename(j.Id)
+		if fr, err := stores.BackupDir().Open(name); errors.Is(err, fs.ErrNotExist) {
 			responses.NotFound(w)
-			return
 		} else if err != nil {
 			responses.InternalServerError(w, err)
-			return
-		}
-
-		if j.Status() == job.StatusCompleted {
-			name := jobIdToFilename(j.Id)
-			if fr, err := stores.BackupDir().Open(name); errors.Is(err, fs.ErrNotExist) {
-				responses.NotFound(w)
-			} else if err != nil {
-				responses.InternalServerError(w, err)
-			} else {
-				responses.DownloadFromReader(w, name, fr)
-			}
 		} else {
-			responses.SeeOther(w, path.Join("api", "jobs", id))
+			responses.DownloadFromReader(w, name, fr)
 		}
-
-	} else if r.Method == http.MethodDelete {
-		_, err := stores.JobStore().Delete(id)
-		if err == nil || errors.Is(err, store.ErrNotFound) {
-			responses.NoContent(w)
-		} else {
-			responses.InternalServerError(w, err)
-		}
-
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.SeeOther(w, path.Join("api", "jobs", id))
+	}
+}
+
+func DeleteBackup(w http.ResponseWriter, r *http.Request) {
+	s := middleware.GetCurrentSession(r)
+	id := path.Clean(r.PathValue("id"))
+	if !strings.HasPrefix(id, s.Username+"/") {
+		responses.Forbidden(w, fmt.Errorf("access denied for %q on %q", s.Username, r.PathValue("id")))
+		return
+	}
+
+	_, err := stores.JobStore().Delete(id)
+	if err == nil || errors.Is(err, store.ErrNotFound) {
+		responses.NoContent(w)
+	} else {
+		responses.InternalServerError(w, err)
 	}
 }
 

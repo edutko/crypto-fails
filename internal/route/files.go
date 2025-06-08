@@ -9,19 +9,15 @@ import (
 	"strings"
 
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
-	"github.com/edutko/crypto-fails/internal/store/blob"
 	"github.com/edutko/crypto-fails/internal/stores"
 	"github.com/edutko/crypto-fails/internal/view"
+	"github.com/edutko/crypto-fails/pkg/api"
+	"github.com/edutko/crypto-fails/pkg/blob"
 )
 
-func MyFiles(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		responses.MethodNotAllowed(w)
-		return
-	}
-
+func GetMyFiles(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	if files, err := listFiles(s.Username); err != nil {
 		responses.InternalServerError(w, err)
@@ -45,27 +41,22 @@ func MyFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Files(w http.ResponseWriter, r *http.Request) {
+func GetFiles(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 
-	if r.Method == http.MethodGet {
-		if blobs, err := listFiles(s.Username); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.JSON(w, struct {
-				Files []blob.Metadata `json:"files"`
-			}{blobs})
-		}
-
-	} else if r.Method == http.MethodPost {
-		uploadFile(s.Username, w, r, false)
-
+	if blobs, err := listFiles(s.Username); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.JSON(w, api.FilesMetadataResponse{Files: blobs})
 	}
 }
 
-func File(w http.ResponseWriter, r *http.Request) {
+func PostFiles(w http.ResponseWriter, r *http.Request) {
+	s := middleware.GetCurrentSession(r)
+	uploadFile(s.Username, w, r, false)
+}
+
+func GetFile(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	key := path.Join(s.Username, r.PathValue("key"))
 
@@ -74,19 +65,23 @@ func File(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodGet {
-		downloadFile(s.Username, key, w, r)
+	downloadFile(s.Username, key, w, r)
+}
 
-	} else if r.Method == http.MethodDelete {
-		_, err := stores.FileStore().DeleteObject(key)
-		if err == nil || errors.Is(err, store.ErrNotFound) {
-			responses.NoContent(w)
-		} else {
-			responses.InternalServerError(w, err)
-		}
+func DeleteFile(w http.ResponseWriter, r *http.Request) {
+	s := middleware.GetCurrentSession(r)
+	key := path.Join(s.Username, r.PathValue("key"))
 
+	if !strings.HasPrefix(key, s.Username+"/") {
+		responses.Forbidden(w, fmt.Errorf("permission denied for %q on %q", s.Username, r.PathValue("key")))
+		return
+	}
+
+	_, err := stores.FileStore().DeleteObject(key)
+	if err == nil || errors.Is(err, store.ErrNotFound) {
+		responses.NoContent(w)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.InternalServerError(w, err)
 	}
 }
 

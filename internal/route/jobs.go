@@ -8,17 +8,12 @@ import (
 	"strings"
 
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/stores"
 )
 
-func Job(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		responses.MethodNotAllowed(w)
-		return
-	}
-
+func GetJob(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	id := path.Clean(r.PathValue("id"))
 	if !strings.HasPrefix(id, s.Username+"/") {

@@ -11,68 +11,58 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/middleware"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/store/constants"
 	"github.com/edutko/crypto-fails/internal/stores"
+	"github.com/edutko/crypto-fails/pkg/api"
 )
 
-func Pubkeys(w http.ResponseWriter, r *http.Request) {
+func GetPubkeys(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	if r.Method == http.MethodGet {
-		getPubkeysForUser(w, s.Username)
-
-	} else if r.Method == http.MethodPost {
-		if err := r.ParseMultipartForm(10 * 1024 * 1024); err != nil {
-			responses.BadRequest(w, err)
-			return
-		}
-
-		f, _, err := r.FormFile("file")
-		if err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		keyBytes, err := io.ReadAll(f)
-		if err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		kid, err := crypto.GetGPGKeyId(keyBytes)
-		if err != nil {
-			responses.BadRequest(w, err)
-			return
-		}
-
-		if err = stores.KeyStore().Put(path.Join(constants.PubkeysByIdPrefix, kid), keyBytes); err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		if err = stores.KeyStore().Put(path.Join(constants.PubkeysByUserPrefix, s.Username, kid), keyBytes); err != nil {
-			responses.InternalServerError(w, err)
-			return
-		}
-
-		responses.Created(w, path.Join("api", "keys", url.PathEscape(kid)))
-
-	} else {
-		responses.MethodNotAllowed(w)
-	}
+	getPubkeysForUser(w, s.Username)
 }
 
-func Pubkey(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		kid := r.PathValue("id")
-		if pk, err := stores.KeyStore().Get(path.Join(constants.PubkeysByIdPrefix, kid)); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.DownloadFromReader(w, kid+".pub", bytes.NewReader(pk))
-		}
+func PostPubkeys(w http.ResponseWriter, r *http.Request) {
+	s := middleware.GetCurrentSession(r)
+
+	f, _, err := r.FormFile("file")
+	if err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	keyBytes, err := io.ReadAll(f)
+	if err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	kid, err := crypto.GetGPGKeyId(keyBytes)
+	if err != nil {
+		responses.BadRequest(w, err)
+		return
+	}
+
+	if err = stores.KeyStore().Put(path.Join(constants.PubkeysByIdPrefix, kid), keyBytes); err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	if err = stores.KeyStore().Put(path.Join(constants.PubkeysByUserPrefix, s.Username, kid), keyBytes); err != nil {
+		responses.InternalServerError(w, err)
+		return
+	}
+
+	responses.Created(w, path.Join("api", "keys", url.PathEscape(kid)))
+}
+
+func GetPubkey(w http.ResponseWriter, r *http.Request) {
+	kid := r.PathValue("id")
+	if pk, err := stores.KeyStore().Get(path.Join(constants.PubkeysByIdPrefix, kid)); err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		responses.DownloadFromReader(w, kid+".pub", bytes.NewReader(pk))
 	}
 }
 
@@ -87,8 +77,6 @@ func getPubkeysForUser(w http.ResponseWriter, username string) {
 		for _, pth := range pks {
 			ids = append(ids, strings.TrimPrefix(pth, prefix))
 		}
-		responses.JSON(w, struct {
-			Keys []string `json:"keys"`
-		}{ids})
+		responses.JSON(w, api.PubkeysResponse{Keys: ids})
 	}
 }

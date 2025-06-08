@@ -5,7 +5,7 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/stores"
-	"github.com/edutko/crypto-fails/internal/user"
+	"github.com/edutko/crypto-fails/pkg/user"
 )
 
 var (

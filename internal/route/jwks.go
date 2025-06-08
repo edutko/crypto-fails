@@ -8,7 +8,7 @@ import (
 	"github.com/MicahParks/jwkset"
 
 	"github.com/edutko/crypto-fails/internal/crypto/keys"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store/constants"
 	"github.com/edutko/crypto-fails/internal/stores"
 )

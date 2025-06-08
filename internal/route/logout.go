@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/edutko/crypto-fails/internal/auth"
-	"github.com/edutko/crypto-fails/internal/responses"
+	"github.com/edutko/crypto-fails/internal/route/responses"
 )
 
 func Logout(w http.ResponseWriter, r *http.Request) {
