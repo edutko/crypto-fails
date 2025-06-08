@@ -106,11 +106,6 @@ func NotFound(w http.ResponseWriter) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
-func MethodNotAllowed(w http.ResponseWriter) {
-	addSecurityHeaders(w)
-	http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-}
-
 func InternalServerError(w http.ResponseWriter, err error) {
 	log.Printf("error: %v", err)
 	addSecurityHeaders(w)

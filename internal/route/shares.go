@@ -22,10 +22,6 @@ import (
 func GetMyShares(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	prefix := s.Username + "/"
-	if r.Method != http.MethodGet {
-		responses.MethodNotAllowed(w)
-		return
-	}
 
 	if links, err := listShares(s.Username); err != nil {
 		responses.InternalServerError(w, err)

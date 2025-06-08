@@ -13,39 +13,27 @@ import (
 	"github.com/edutko/crypto-fails/pkg/user"
 )
 
-func Users(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		getUsers(w)
-
-	} else if r.Method == http.MethodPost {
-		var u user.User
-		if err := requests.ParseJSONBody(r, &u); err != nil {
-			responses.BadRequest(w, err)
-		} else {
-			createUser(u, w, false)
-		}
-
-	} else {
-		responses.MethodNotAllowed(w)
-	}
-}
-
-func UserPubkeys(w http.ResponseWriter, r *http.Request) {
-	username := r.PathValue("id")
-	if r.Method == http.MethodGet {
-		getPubkeysForUser(w, username)
-	} else {
-		responses.MethodNotAllowed(w)
-	}
-}
-
-func getUsers(w http.ResponseWriter) {
+func GetUsers(w http.ResponseWriter, r *http.Request) {
 	usernames, err := stores.UserStore().ListKeys()
 	if err != nil {
 		responses.InternalServerError(w, err)
 		return
 	}
 	responses.JSON(w, api.UsersResponse{Users: usernames})
+}
+
+func PostUsers(w http.ResponseWriter, r *http.Request) {
+	var u user.User
+	if err := requests.ParseJSONBody(r, &u); err != nil {
+		responses.BadRequest(w, err)
+	} else {
+		createUser(u, w, false)
+	}
+}
+
+func GetUserPubkeys(w http.ResponseWriter, r *http.Request) {
+	username := r.PathValue("username")
+	getPubkeysForUser(w, username)
 }
 
 func createUser(u user.User, w http.ResponseWriter, interactive bool) {

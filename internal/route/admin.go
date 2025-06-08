@@ -8,10 +8,5 @@ import (
 )
 
 func GetAdmin(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		responses.MethodNotAllowed(w)
-		return
-	}
-
 	responses.RenderView(w, r.Context(), view.Admin())
 }

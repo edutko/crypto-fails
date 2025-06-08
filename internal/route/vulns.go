@@ -11,7 +11,7 @@ import (
 	"github.com/edutko/crypto-fails/internal/stores"
 )
 
-func TweakCiphertext(w http.ResponseWriter, r *http.Request) {
+func PutCiphertext(w http.ResponseWriter, r *http.Request) {
 	key := r.PathValue("key")
 
 	if err := r.ParseMultipartForm(config.MaxFileSize()); err != nil {
@@ -25,18 +25,14 @@ func TweakCiphertext(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodPut {
-		// This looks a lot like uploadFile(), but it does NOT encrypt the file.
-		// We want an attacker to be able to upload chosen ciphertext as-is.
-		if fw, err := stores.FileStore().PutObject(key); errors.Is(err, store.ErrNotFound) {
-			responses.NotFound(w)
-		} else if err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			_, _ = io.Copy(fw, f)
-			responses.Accepted(w)
-		}
+	// This looks a lot like uploadFile(), but it does NOT encrypt the file.
+	// We want an attacker to be able to upload chosen ciphertext as-is.
+	if fw, err := stores.FileStore().PutObject(key); errors.Is(err, store.ErrNotFound) {
+		responses.NotFound(w)
+	} else if err != nil {
+		responses.InternalServerError(w, err)
 	} else {
-		responses.MethodNotAllowed(w)
+		_, _ = io.Copy(fw, f)
+		responses.Accepted(w)
 	}
 }

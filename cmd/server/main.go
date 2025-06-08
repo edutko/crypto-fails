@@ -80,7 +80,7 @@ func main() {
 		mux.Handle("GET /vulns/leak/", http.StripPrefix("/vulns/leak/", http.FileServer(fs)))
 	}
 	if conf.TweakEncryptedFiles {
-		mux.Handle("PUT /vulns/tweak/{key...}", http.StripPrefix("/vulns/tweak/", http.HandlerFunc(route.TweakCiphertext)))
+		mux.Handle("PUT /vulns/tweak/{key...}", http.StripPrefix("/vulns/tweak/", http.HandlerFunc(route.PutCiphertext)))
 	}
 
 	mux.HandleFunc("POST /api/login", route.PostLoginAPI)
@@ -105,8 +105,9 @@ func main() {
 	mux.HandleFunc("POST /api/shares", m.Authenticated(route.PostShares))
 	mux.HandleFunc("DELETE /api/shares/{id}", m.Authenticated(route.DeleteShare))
 
-	mux.HandleFunc("/api/users", m.RequireAdmin(route.Users))
-	mux.HandleFunc("/api/users/{id}/keys", m.Authenticated(route.UserPubkeys))
+	mux.HandleFunc("GET /api/users", m.RequireAdmin(route.GetUsers))
+	mux.HandleFunc("POST /api/users", m.RequireAdmin(route.PostUsers))
+	mux.HandleFunc("GET /api/users/{username}/keys", m.Authenticated(route.GetUserPubkeys))
 
 	serve(conf.ListenAddr, mux)
 }
