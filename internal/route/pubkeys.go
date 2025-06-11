@@ -20,7 +20,7 @@ import (
 
 func GetPubkeys(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	getPubkeysForUser(w, s.Username)
+	getPubkeysForUser(s.Username, w)
 }
 
 func PostPubkeys(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +66,7 @@ func GetPubkey(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getPubkeysForUser(w http.ResponseWriter, username string) {
+func getPubkeysForUser(username string, w http.ResponseWriter) {
 	prefix := path.Join(constants.PubkeysByUserPrefix, username) + "/"
 	if pks, err := stores.KeyStore().ListKeysWithPrefix(prefix); errors.Is(err, store.ErrNotFound) {
 		responses.NotFound(w)

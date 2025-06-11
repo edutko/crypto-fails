@@ -33,7 +33,7 @@ func PostUsers(w http.ResponseWriter, r *http.Request) {
 
 func GetUserPubkeys(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
-	getPubkeysForUser(w, username)
+	getPubkeysForUser(username, w)
 }
 
 func createUser(u user.User, w http.ResponseWriter, interactive bool) {
