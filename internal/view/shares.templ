@@ -28,11 +28,10 @@ if s := auth.GetCurrentSession(ctx); s != nil {
   <th class={align[1]}>Expires</th>
 </thead>
 <tbody>
-for _, row := range items{
+for _, row := range items {
     <tr>
-    for i, itm := range row {
-        <td class={align[i]}>{itm}</td>
-    }
+        <td class={align[0]}><a href={templ.SafeURL("/download?"+row[2])}>{row[0]}</a></td>
+        <td class={align[1]}>{row[1]}</td>
     </tr>
 }
 </tbody>

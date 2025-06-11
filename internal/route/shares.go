@@ -21,15 +21,17 @@ import (
 
 func GetMyShares(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	prefix := s.Username + "/"
-
 	if links, err := listShares(s.Username); err != nil {
 		responses.InternalServerError(w, err)
 
 	} else {
 		var tbl [][]string
 		for _, v := range links {
-			tbl = append(tbl, []string{strings.TrimPrefix(v.Key, prefix), v.Expiration.Format("2006-01-02")})
+			tbl = append(tbl, []string{
+				strings.TrimPrefix(v.Key, s.Username+"/"),
+				v.Expiration.Format("2006-01-02"),
+				v.QueryString(),
+			})
 		}
 		responses.RenderView(w, r.Context(), view.MyShares(tbl, []string{"left-justified", "centered"}))
 	}
@@ -38,6 +40,8 @@ func GetMyShares(w http.ResponseWriter, r *http.Request) {
 func PostShare(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	key := r.PostFormValue("key")
+
+	// normalize path and check prefix to prevent path traversals
 	if !strings.HasPrefix(path.Join(s.Username, key), s.Username+"/") {
 		responses.BadRequest(w, errors.New("invalid key"))
 		return
