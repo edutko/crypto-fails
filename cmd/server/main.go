@@ -27,7 +27,10 @@ import (
 
 func main() {
 	app.SetVersion(Version)
-	conf := config.Load()
+	conf, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	random.SetWeakPRNG(conf.WeakPRNGAlgorithm)
 

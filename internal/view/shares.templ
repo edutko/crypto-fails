@@ -24,14 +24,18 @@ if s := auth.GetCurrentSession(ctx); s != nil {
 <h3>My Shares</h3>
 <table id="shares-table">
 <thead>
-  <th class={align[0]}>Name</th>
+  <th class={align[0]}>File</th>
   <th class={align[1]}>Expires</th>
+  <th class="centered">Actions</th>
 </thead>
 <tbody>
 for _, row := range items {
     <tr>
-        <td class={align[0]}><a href={templ.SafeURL("/download?"+row[2])}>{row[0]}</a></td>
+        <td class={align[0]}>{row[0]}</td>
         <td class={align[1]}>{row[1]}</td>
+        <td class="centered">
+        @component.CopyButton(row[2], row[3], "Copy link to clipboard")
+        </td>
     </tr>
 }
 </tbody>
@@ -39,5 +43,6 @@ for _, row := range items {
 </div>
 </div>
 </body>
+<script src="/static/js/utils.js"></script>
 </html>
 }

@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	ExternalURL    string `json:"externalURL"`
 	ListenAddr     string `json:"listenAddr"`
 	StorageRootDir string `json:"storageRootDir"`
 	WebRootDir     string `json:"webRootDir"`

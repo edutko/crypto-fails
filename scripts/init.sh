@@ -35,7 +35,7 @@ echo "Alice's public keys:"
 curl -s -H "Authorization: Bearer $token" $server/api/keys | jq -r '.keys[]'
 echo ""
 echo "Alice's shared file link:"
-curl -s -H "Authorization: Bearer $token" --json '{ "key": "corp-card.txt" }' $server/api/shares | jq -r .link
+curl -s -H "Authorization: Bearer $token" --json '{ "key": "corp-card.txt" }' $server/api/shares | jq -r .url
 
 # Upload and share some files (Bob)
 token=$(curl -s --json '{"username": "bob", "password": "password"}' $server/api/login | jq -r .token)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -12,6 +13,7 @@ import (
 )
 
 var cfg = app.Config{
+	ExternalURL:    "http://localhost:8080/",
 	ListenAddr:     "localhost:8080",
 	StorageRootDir: "data",
 	WebRootDir:     "web/static",
@@ -26,17 +28,27 @@ var cfg = app.Config{
 	ShareLinkDuration: 15 * 24 * time.Hour,
 }
 
-func Load() app.Config {
+func Load() (app.Config, error) {
 	lock.Lock()
 	defer lock.Unlock()
 
 	if cfgLoaded {
-		return cfg
+		return cfg, nil
 	}
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if listenAddr != "" {
 		cfg.ListenAddr = listenAddr
+		cfg.ExternalURL = (&url.URL{Scheme: "http:", Host: listenAddr, Path: "/"}).String()
+	}
+
+	externalURL := os.Getenv("EXTERNAL_URL")
+	if externalURL != "" {
+		u, err := url.Parse(externalURL)
+		if err != nil {
+			return cfg, err
+		}
+		cfg.ExternalURL = u.String()
 	}
 
 	switch strings.ToLower(os.Getenv("LEAK_ENCRYPTED_FILES")) {
@@ -68,7 +80,15 @@ func Load() app.Config {
 
 	cfgLoaded = true
 
-	return cfg
+	return cfg, nil
+}
+
+func BaseURL() *url.URL {
+	u, err := url.Parse(cfg.ExternalURL)
+	if err != nil {
+		panic(err)
+	}
+	return u
 }
 
 func MaxFileSize() int64 {

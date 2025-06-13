@@ -15,7 +15,8 @@ type Link struct {
 	Id         string    `json:"id,omitempty"`
 	Key        string    `json:"key"`
 	Expiration time.Time `json:"expiration,omitempty"`
-	Signature  string    `json:"-"`
+	Signature  string    `json:"signature,omitempty"`
+	URL        string    `json:"url,omitempty"`
 }
 
 var (
@@ -39,7 +40,8 @@ func NewSignedLink(key string, expiration time.Time, secret []byte) Link {
 		Key:        key,
 		Expiration: expiration.UTC(),
 	}
-	l.Signature = base64.RawURLEncoding.EncodeToString(signLink(l, secret))
+	sig := signLink(l, secret)
+	l.Signature = base64.RawURLEncoding.EncodeToString(sig)
 	return l
 }
 

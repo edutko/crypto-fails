@@ -1,0 +1,6 @@
+package component
+
+templ CopyButton(id, text, title string) {
+  <button id={"copy-"+id} class="link-button" title={title}>📋</button>
+  <input id={"data-"+id} type="hidden" value={text} />
+}
