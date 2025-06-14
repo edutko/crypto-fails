@@ -42,7 +42,7 @@ func Index() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><h1>$5wrench Cloud Storage</h1><h2>So secure, they'll have to beat your secrets out of you!<sup><a href=\"https://xkcd.com/538/\">1</a></sup></h2><div id=\"content\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><h1>$5wrench Cloud Storage</h1><h2>So secure, they'll have to beat your secrets out of you!<sup title=\"https://xkcd.com/538/\"><a href=\"https://xkcd.com/538/\">[1]</a></sup></h2><div id=\"content\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -60,7 +60,7 @@ func Index() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div id=\"content-main\"><h3>Unlimited Storage and Sharing</h3><p>Upload as many files as you want. Keep them private or create links to share them with others.</p><p>Family photos, malware binaries, or state secrets, we'll keep your data safe and secure.</p><h3>Reliability</h3><p>With <strong>nine fives</strong> of availability, you'll <strike>&nbsp;always&nbsp;</strike> usually have access to your critical data.</p><h3>Robust Cryptography</h3><p>$5wrench protects your data with <strong>military-grade</strong> encryption like AES-256 and ROT-13<sup><a href=\"https://bsky.app/profile/lookitup.baby/post/3kj4jfgba7c2o\">2</a></sup>.</p><h3>Certified Security</h3><p><ul><li>FLIPS 140-3</li><li>SOCK-2</li><li>ISO 9660</li><li>Uncommon Criteria</li><li>HIPPO</li><li>PCIe-DSS x16</li><li>FedSLOPE, StateSLOPE</li></ul></p></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div id=\"content-main\"><h3>Unlimited Storage and Sharing</h3><p>Upload as many files as you want. Keep them private or share them with secure links.</p><p>Family photos, malware binaries, or state secrets, we'll keep your data safe and secure.</p><h3>Reliability</h3><p>With <strong>nine fives</strong> of availability, you'll <strike>&nbsp;always&nbsp;</strike> usually have access to your critical data.</p><h3>Robust Cryptography</h3><p>$5wrench protects your data with <strong>military-grade</strong> encryption like AES-256 and ROT-13<sup title=\"Technically a Caesar cipher is military grade encryption. They don’t mention which military\n- @IanColdwater\"><a href=\"https://bsky.app/profile/lookitup.baby/post/3kj4jfgba7c2o\">[2]</a></sup>.</p><h3>Certified Security</h3><p><ul><li>FLIPS 140-3</li><li>SOCK-2</li><li>ISO 9660</li><li>Uncommon Criteria</li><li>HIPPO</li><li>PCIe-DSS x16</li><li>FedSLOPE, StateSLOPE</li></ul></p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
