@@ -91,6 +91,10 @@ func BaseURL() *url.URL {
 	return u
 }
 
+func FileEncryptionMode() crypto.Mode {
+	return cfg.FileEncryptionMode
+}
+
 func MaxFileSize() int64 {
 	return cfg.FileSizeLimit
 }

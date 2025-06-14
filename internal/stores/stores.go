@@ -8,7 +8,6 @@ import (
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/job"
 	"github.com/edutko/crypto-fails/internal/store/blob"
-	"github.com/edutko/crypto-fails/internal/store/encrypted"
 	"github.com/edutko/crypto-fails/internal/store/kv"
 	"github.com/edutko/crypto-fails/pkg/share"
 	"github.com/edutko/crypto-fails/pkg/user"
@@ -41,22 +40,17 @@ func Initialize(storageRootDir string, encryptionMode crypto.Mode) error {
 		return err
 	}
 
-	if blobStore, err = blob.Open(filepath.Join(storageRootDir, "files")); err != nil {
-		Cleanup()
-		return err
-	}
-
-	if keyStore, err = kv.Open[[]byte](filepath.Join(storageRootDir, "keys")); err != nil {
-		Cleanup()
-		return err
-	}
-
-	if fileStore, err = encrypted.NewObjectStore(blobStore, keyStore, encryptionMode); err != nil {
+	if fileStore, err = blob.Open(filepath.Join(storageRootDir, "files")); err != nil {
 		Cleanup()
 		return err
 	}
 
 	jobStore = kv.NewInMemoryStore[job.Descriptor]()
+
+	if keyStore, err = kv.Open[[]byte](filepath.Join(storageRootDir, "keys")); err != nil {
+		Cleanup()
+		return err
+	}
 
 	if shareStore, err = kv.Open[share.Link](filepath.Join(storageRootDir, "shares")); err != nil {
 		Cleanup()
@@ -75,7 +69,7 @@ func BackupDir() *os.Root {
 	return backupRoot
 }
 
-func FileStore() *encrypted.ObjectStore {
+func FileStore() blob.Store {
 	return fileStore
 }
 
@@ -102,18 +96,14 @@ func Cleanup() {
 
 	if fileStore != nil {
 		_ = fileStore.Close()
-
-	} else {
-		if blobStore != nil {
-			_ = blobStore.Close()
-		}
-		if keyStore != nil {
-			_ = keyStore.Close()
-		}
 	}
 
 	if jobStore != nil {
 		_ = jobStore.Close()
+	}
+
+	if keyStore != nil {
+		_ = keyStore.Close()
 	}
 
 	if shareStore != nil {
@@ -125,7 +115,6 @@ func Cleanup() {
 	}
 
 	backupRoot = nil
-	blobStore = nil
 	fileStore = nil
 	jobStore = nil
 	keyStore = nil
@@ -134,8 +123,7 @@ func Cleanup() {
 }
 
 var backupRoot *os.Root
-var blobStore blob.Store
-var fileStore *encrypted.ObjectStore
+var fileStore blob.Store
 var jobStore kv.Store[job.Descriptor]
 var keyStore kv.Store[[]byte]
 var shareStore kv.Store[share.Link]

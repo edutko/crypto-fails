@@ -65,7 +65,7 @@ func GetFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	downloadFile(s.Username, key, w, r)
+	downloadFile(s.Username, key, w)
 }
 
 func DeleteFile(w http.ResponseWriter, r *http.Request) {
