@@ -10,7 +10,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto/pkcs7"
 	"github.com/edutko/crypto-fails/pkg/user/role"
 )
@@ -21,12 +20,12 @@ var (
 	ErrInvalidCookie = errors.New("invalid cookie")
 )
 
-func NewCookie(username, realName string, roles []string) (*http.Cookie, error) {
+func NewCookie(username, realName string, duration time.Duration, roles []string) (*http.Cookie, error) {
 	s := &Session{
 		Username: username,
 		IsAdmin:  slices.Contains(roles, role.Admin),
 		RealName: realName,
-		Expires:  int(timeNow().Add(config.SessionDuration()).Unix()),
+		Expires:  int(timeNow().Add(duration).Unix()),
 	}
 	plaintext := pkcs7.Pad([]byte(s.QueryString()), aes.BlockSize)
 	iv := make([]byte, aes.BlockSize)
@@ -41,7 +40,7 @@ func NewCookie(username, realName string, roles []string) (*http.Cookie, error) 
 	return &http.Cookie{
 		Name:     CookieName,
 		Value:    hex.EncodeToString(append(iv, ciphertext...)),
-		MaxAge:   int(config.SessionDuration()),
+		MaxAge:   int(duration),
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

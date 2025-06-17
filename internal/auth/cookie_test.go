@@ -11,18 +11,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto/pkcs7"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
-	"github.com/edutko/crypto-fails/pkg/app"
 )
 
 func TestCreateCookie(t *testing.T) {
-	config.InitializeForTesting(app.Config{
-		SessionDuration: 1 * time.Hour,
-	})
 	now := time.Now()
-	exp := now.Add(config.SessionDuration()).Unix()
+	exp := now.Add(1 * time.Hour).Unix()
 	timeNow = func() time.Time { return now }
 	k := random.Bytes(32)
 	cookieEncryptionKey = func() []byte { return k }
@@ -41,7 +36,7 @@ func TestCreateCookie(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			c, err := NewCookie(tc.username, tc.realName, tc.roles)
+			c, err := NewCookie(tc.username, tc.realName, 1*time.Hour, tc.roles)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, decrypt(c.Value))

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/edutko/crypto-fails/internal/auth"
+	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/route/requests"
 	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/pkg/api"
@@ -44,7 +45,7 @@ func interactiveLogin(w http.ResponseWriter, username, password string) {
 	if u, err := authenticate(username, password); err != nil || u == nil {
 		responses.Unauthorized(w)
 	} else {
-		if c, err := auth.NewCookie(u.Username, u.RealName, u.Roles); err != nil {
+		if c, err := auth.NewCookie(u.Username, u.RealName, config.SessionDuration(), u.Roles); err != nil {
 			responses.InternalServerError(w, err)
 		} else {
 			http.SetCookie(w, c)

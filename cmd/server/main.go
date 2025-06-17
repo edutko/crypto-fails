@@ -14,7 +14,6 @@ import (
 
 	"github.com/edutko/crypto-fails/internal/app"
 	"github.com/edutko/crypto-fails/internal/auth"
-	"github.com/edutko/crypto-fails/internal/config"
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
 	m "github.com/edutko/crypto-fails/internal/middleware"
@@ -26,8 +25,7 @@ import (
 )
 
 func main() {
-	app.SetVersion(Version)
-	conf, err := config.Load()
+	conf, err := app.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,5 +163,3 @@ const (
 	defaultAdminUsername = "admin"
 	initialAdminPassword = "admin"
 )
-
-var Version = "0.0.0"
