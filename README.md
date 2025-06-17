@@ -14,6 +14,8 @@ A moderately realistic encrypted file storage/sharing app full of cryptographic 
 * Nonce reuse in CTR mode for encrypted files
 * Unauthenticated ciphertext (CTR mode) in encrypted files
 * Length-extension on SHA-256 MAC in sharing links
+* Predictable nonces in password reset links
+* ECDSA nonce reuse in license signatures
 
 ## Special routes to enable attacks
 

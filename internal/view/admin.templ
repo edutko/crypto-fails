@@ -3,9 +3,10 @@ package view
 import (
 	"github.com/edutko/crypto-fails/internal/auth"
     "github.com/edutko/crypto-fails/internal/view/component"
+	"github.com/edutko/crypto-fails/pkg/app"
 )
 
-templ Admin() {
+templ Admin(appInfo app.Info) {
 <!DOCTYPE html>
 <html>
 @component.Head()
@@ -22,8 +23,43 @@ if s := auth.GetCurrentSession(ctx); s != nil {
 
 <div id="content-main">
 <h3>Administration</h3>
+<table>
+<tr>
+    <td>Version:</td>
+    <td>{appInfo.Version}</td>
+</tr>
+<tr>
+    <td>Licensed to:</td>
+    <td>{appInfo.License.Licensee}</td>
+</tr>
+<tr>
+    <td>License valid:</td>
+    <td>{appInfo.License.ValidFrom.Format("2006-01-02")} - {appInfo.License.ValidTo.Format("2006-01-02")}</td>
+</tr>
+<tr>
+    <td>License id:</td>
+    <td>{appInfo.License.Id}</td>
+</tr>
+if len(appInfo.License.Features) > 0 {
+<tr>
+    <td colspan="2">
+    Licensed features:
+    <ul>
+for k, v := range appInfo.License.Features {
+    <li>{k}: {v}</li>
+}
+    </ul>
+    </td>
+</tr>
+}
+</table>
+
 <p>
-<h2><center><blink>UNDER CONSTRUCTION</blink></center></h2>
+Upload a license:
+<form action="/license" method="post" enctype="multipart/form-data">
+<input type="file" id="file" name="file" required />
+<input type="submit" id="submit" value="Upload" />
+</form>
 </p>
 </div>
 </div>

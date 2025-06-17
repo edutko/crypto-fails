@@ -30,6 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	app.LoadLicense(filepath.Join(conf.StorageRootDir, "license.json"))
 	random.SetWeakPRNG(conf.WeakPRNGAlgorithm)
 
 	if err := stores.Initialize(conf.StorageRootDir, conf.FileEncryptionMode); err != nil {
@@ -72,6 +73,7 @@ func main() {
 	mux.HandleFunc("GET /download", m.MaybeAuthenticated(route.GetDownload))
 	mux.HandleFunc("GET /files", m.Authenticated(route.GetMyFiles))
 	mux.HandleFunc("GET /keys/{id}", route.GetPubkey)
+	mux.HandleFunc("POST /license", route.PostLicense)
 	mux.HandleFunc("GET /shares", m.Authenticated(route.GetMyShares))
 	mux.HandleFunc("POST /share", m.Authenticated(route.PostShare))
 	mux.HandleFunc("POST /upload", m.Authenticated(route.PostUpload))

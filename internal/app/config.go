@@ -87,5 +87,7 @@ func LoadConfig() (app.Config, error) {
 	return cfg, nil
 }
 
-var lock sync.Mutex
-var cfgLoaded bool
+var (
+	lock      sync.Mutex
+	cfgLoaded bool
+)

@@ -1,0 +1,12 @@
+{
+  "id": "bcb36789-0a9b-438d-bf2b-a1c171a02394",
+  "licensee": "Paying Customer",
+  "validFrom": "2023-01-01T00:00:00Z",
+  "validTo": "2023-12-31T00:00:00Z",
+  "features": {
+    "Max file size (MB)": 5000,
+    "Storage limit (GB)": 500,
+    "Virus scanning": 1
+  },
+  "signature": "MEUCIHMQPsMLPM9X2q4I6TU0rvFEo1lAz2u7oSoM98vV1lpkAiEA9NiynvT6rzpxAOFwHv_OZfowQgXwZIrMf-2q71xFt7Y"
+}

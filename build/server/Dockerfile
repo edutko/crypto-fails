@@ -9,7 +9,7 @@ ENV CGO_ENABLED=0
 
 WORKDIR /src
 RUN --mount=type=bind,source=.,target=/src \
-    go build -ldflags "-X main.Version=${VERSION}" -o /out/server ./cmd/server \
+    make -e OUT=/out /out/server \
     && cp -r /src/web /out/
 
 FROM scratch

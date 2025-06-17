@@ -1,0 +1,14 @@
+{
+  "id": "f0e45b38-efca-40e0-b965-32eb5eee06ef",
+  "licensee": "Paying Customer",
+  "validFrom": "2024-01-01T00:00:00Z",
+  "validTo": "2024-12-31T00:00:00Z",
+  "features": {
+    "DLP": 1,
+    "Max file size (MB)": 100000,
+    "OIDC": 1,
+    "Storage limit (GB)": 20000,
+    "Virus scanning": 1
+  },
+  "signature": "MEUCIHMQPsMLPM9X2q4I6TU0rvFEo1lAz2u7oSoM98vV1lpkAiEAomX2Oq263VtnU0VDfJ_lXwTRvoewcyXdJKNAYIrxPRk"
+}

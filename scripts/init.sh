@@ -4,6 +4,10 @@ server="http://localhost:8080"
 
 token=$(curl -s --json '{"username": "admin", "password": "admin"}' $server/api/login | jq -r .token)
 
+# Upload expired license files
+curl -s -H "Authorization: Bearer $token" -F 'file=@assets/license-2023.json' $server/api/files
+curl -s -H "Authorization: Bearer $token" -F 'file=@assets/license-2024.json' $server/api/files
+
 # Create some users
 curl -s -H "Authorization: Bearer $token" --json '{"username": "alice", "password": "password"}' $server/api/users
 curl -s -H "Authorization: Bearer $token" --json '{"username": "bob", "password": "password"}' $server/api/users
