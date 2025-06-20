@@ -1,8 +1,11 @@
 package view
 
-import "github.com/edutko/crypto-fails/internal/view/component"
+import (
+    "github.com/edutko/crypto-fails/internal/view/component"
+    "github.com/edutko/crypto-fails/pkg/user"
+)
 
-templ RegistrationForm() {
+templ RegistrationForm(u user.User, errMsg string) {
 <!DOCTYPE html>
 <html>
 @component.Head()
@@ -16,22 +19,22 @@ templ RegistrationForm() {
 
 <div class="form-row">
 <label for="username">Username:</label>
-<input type="text" name="username" id="username" required />
+<input type="text" name="username" id="username" value={u.Username} required />
 </div>
 
 <div class="form-row">
 <label for="password">Password:</label>
-<input type="password" name="password" id="password" required />
+<input type="password" name="password" id="password" value={u.Password} required />
 </div>
 
 <div class="form-row">
 <label for="realname">Real name:</label>
-<input type="text" name="realname" id="realname" />
+<input type="text" name="realname" id="realname" value={u.RealName} />
 </div>
 
 <div class="form-row">
 <label for="email">Email address:</label>
-<input type="text" name="email" id="email" />
+<input type="text" name="email" id="email" value={u.Email} />
 </div>
 
 <div class="form-row">
@@ -39,6 +42,9 @@ templ RegistrationForm() {
 </div>
 
 </form>
+if errMsg != "" {
+    <p class="error-message">{errMsg}</p>
+}
 </div>
 
 </body>

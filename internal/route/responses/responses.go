@@ -106,6 +106,11 @@ func NotFound(w http.ResponseWriter) {
 	http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
+func ConflictWithMessage(w http.ResponseWriter, message string) {
+	addSecurityHeaders(w)
+	http.Error(w, message, http.StatusConflict)
+}
+
 func InternalServerError(w http.ResponseWriter, err error) {
 	log.Printf("error: %v", err)
 	addSecurityHeaders(w)

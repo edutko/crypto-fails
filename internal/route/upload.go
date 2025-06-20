@@ -12,6 +12,7 @@ import (
 	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/crypto/random"
 	"github.com/edutko/crypto-fails/internal/middleware"
+	"github.com/edutko/crypto-fails/internal/route/requests"
 	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/store/constants"
@@ -21,10 +22,10 @@ import (
 
 func PostUpload(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	uploadFile(s.Username, w, r, true)
+	uploadFile(s.Username, w, requests.WithInteractiveLabel(r))
 }
 
-func uploadFile(namespace string, w http.ResponseWriter, r *http.Request, interactive bool) {
+func uploadFile(namespace string, w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseMultipartForm(config.MaxFileSize()); err != nil {
 		responses.BadRequest(w, err)
 		return
@@ -49,7 +50,7 @@ func uploadFile(namespace string, w http.ResponseWriter, r *http.Request, intera
 			responses.InternalServerError(w, err)
 		} else {
 			_, _ = io.Copy(ew, f)
-			if interactive {
+			if requests.IsInteractive(r) {
 				responses.Found(w, "/files")
 			} else {
 				responses.Created(w, "/download?"+share.NewLink(h.Filename, share.DoesNotExpire).QueryString())

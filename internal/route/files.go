@@ -53,7 +53,7 @@ func GetFiles(w http.ResponseWriter, r *http.Request) {
 
 func PostFiles(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
-	uploadFile(s.Username, w, r, false)
+	uploadFile(s.Username, w, r)
 }
 
 func GetFile(w http.ResponseWriter, r *http.Request) {

@@ -17,7 +17,7 @@ func GetLoginUI(w http.ResponseWriter, r *http.Request) {
 func PostLoginUI(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	interactiveLogin(w, username, password)
+	login(username, password, w, requests.WithInteractiveLabel(r))
 }
 
 func PostLoginAPI(w http.ResponseWriter, r *http.Request) {
@@ -30,26 +30,29 @@ func PostLoginAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if u, err := authenticate(l.Username, l.Password); err != nil {
-		responses.Unauthorized(w)
-	} else {
-		if token, err := auth.NewToken(u.Username, u.RealName, u.Roles); err != nil {
-			responses.InternalServerError(w, err)
-		} else {
-			responses.JSON(w, api.TokenResponse{Token: token})
-		}
-	}
+	login(l.Username, l.Password, w, r)
 }
 
-func interactiveLogin(w http.ResponseWriter, username, password string) {
-	if u, err := authenticate(username, password); err != nil || u == nil {
+func login(username, password string, w http.ResponseWriter, r *http.Request) {
+	u, err := authenticate(username, password)
+	if err != nil || u == nil {
 		responses.Unauthorized(w)
-	} else {
+		return
+	}
+
+	if requests.IsInteractive(r) {
 		if c, err := auth.NewCookie(u.Username, u.RealName, config.SessionDuration(), u.Roles); err != nil {
 			responses.InternalServerError(w, err)
 		} else {
 			http.SetCookie(w, c)
 			responses.SeeOther(w, "/files")
+		}
+
+	} else {
+		if token, err := auth.NewToken(u.Username, u.RealName, u.Roles); err != nil {
+			responses.InternalServerError(w, err)
+		} else {
+			responses.JSON(w, api.TokenResponse{Token: token})
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package route
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"path"
@@ -9,6 +10,7 @@ import (
 	"github.com/edutko/crypto-fails/internal/route/requests"
 	"github.com/edutko/crypto-fails/internal/route/responses"
 	"github.com/edutko/crypto-fails/internal/stores"
+	"github.com/edutko/crypto-fails/internal/view"
 	"github.com/edutko/crypto-fails/pkg/api"
 	"github.com/edutko/crypto-fails/pkg/user"
 )
@@ -27,7 +29,7 @@ func PostUsers(w http.ResponseWriter, r *http.Request) {
 	if err := requests.ParseJSONBody(r, &u); err != nil {
 		responses.BadRequest(w, err)
 	} else {
-		createUser(u, w, false)
+		createUser(u, w, r)
 	}
 }
 
@@ -36,14 +38,24 @@ func GetUserPubkeys(w http.ResponseWriter, r *http.Request) {
 	getPubkeysForUser(username, w)
 }
 
-func createUser(u user.User, w http.ResponseWriter, interactive bool) {
+func createUser(u user.User, w http.ResponseWriter, r *http.Request) {
 	if u.Username == "" || u.Password == "" {
-		responses.BadRequestWithMessage(w, "username and password are required")
+		msg := "username and password are required"
+		if requests.IsInteractive(r) {
+			responses.RenderView(w, r.Context(), view.RegistrationForm(user.User{}, msg))
+		} else {
+			responses.BadRequestWithMessage(w, msg)
+		}
 		return
 	}
 
 	if !user.UsernamePattern.MatchString(u.Username) {
-		responses.BadRequestWithMessage(w, "username must match /"+user.UsernamePattern.String()+"/")
+		msg := "username must match /" + user.UsernamePattern.String() + "/"
+		if requests.IsInteractive(r) {
+			responses.RenderView(w, r.Context(), view.RegistrationForm(user.User{}, msg))
+		} else {
+			responses.BadRequestWithMessage(w, msg)
+		}
 		return
 	}
 
@@ -57,14 +69,26 @@ func createUser(u user.User, w http.ResponseWriter, interactive bool) {
 	u.Password = ""
 	u.PasswordHash = ph
 
-	err = stores.UserStore().Put(u.Username, u)
+	created, err := stores.UserStore().PutIfNotExists(u.Username, u)
 	if err != nil {
 		responses.InternalServerError(w, err)
 		return
 	}
 
-	if interactive {
-		interactiveLogin(w, u.Username, password)
+	if !created {
+		msg := fmt.Sprintf("user %q already exists", u.Username)
+		if requests.IsInteractive(r) {
+			u.Password = password
+			u.PasswordHash = ""
+			responses.RenderView(w, r.Context(), view.RegistrationForm(u, msg))
+		} else {
+			responses.ConflictWithMessage(w, msg)
+		}
+		return
+	}
+
+	if requests.IsInteractive(r) {
+		login(u.Username, password, w, r)
 	} else {
 		responses.Created(w, path.Join("/api", "users", url.PathEscape(u.Username)))
 	}

@@ -18,7 +18,6 @@ import (
 	"github.com/edutko/crypto-fails/internal/crypto/random"
 	m "github.com/edutko/crypto-fails/internal/middleware"
 	"github.com/edutko/crypto-fails/internal/route"
-	"github.com/edutko/crypto-fails/internal/store"
 	"github.com/edutko/crypto-fails/internal/stores"
 	"github.com/edutko/crypto-fails/pkg/user"
 	"github.com/edutko/crypto-fails/pkg/user/role"
@@ -42,7 +41,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ensureAdminUserExists()
+	for _, u := range defaultUsers {
+		ensureUserExists(u)
+	}
 
 	staticFilesRoot, err := os.OpenRoot(conf.WebRootDir)
 	if err != nil {
@@ -139,29 +140,20 @@ func serve(addr string, mux *http.ServeMux) {
 	}
 }
 
-func ensureAdminUserExists() {
-	_, err := stores.UserStore().Get(defaultAdminUsername)
-	if errors.Is(err, store.ErrNotFound) {
-		ph, err := crypto.HashPassword(initialAdminPassword)
-		if err != nil {
-			panic(err)
-		}
+func ensureUserExists(u user.User) {
+	var err error
 
-		if err = stores.UserStore().Put(defaultAdminUsername, user.User{
-			Username:     defaultAdminUsername,
-			PasswordHash: ph,
-			Roles:        []string{role.Admin},
-			RealName:     "Default Administrator",
-		}); err != nil {
-			panic(err)
-		}
+	u.PasswordHash, err = crypto.HashPassword(u.Password)
+	if err != nil {
+		panic(err)
+	}
+	u.Password = ""
 
-	} else if err != nil {
+	if _, err = stores.UserStore().PutIfNotExists(u.Username, u); err != nil {
 		panic(err)
 	}
 }
 
-const (
-	defaultAdminUsername = "admin"
-	initialAdminPassword = "admin"
-)
+var defaultUsers = []user.User{
+	{Username: "admin", Password: "admin", RealName: "Default Administrator", Roles: []string{role.Admin}},
+}
