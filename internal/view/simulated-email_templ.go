@@ -43,7 +43,7 @@ func SimulatedEmail(emailAddr, username, nonce string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><h1>$5wrench Cloud Storage</h1><h2>So secure, they'll have to beat your secrets out of you!<sup><a href=\"https://xkcd.com/538/\">1</a></sup></h2><div id=\"content\"><div id=\"content-email\"><h3>You've got mail!</h3><p><b>From:</b> support@five-dollar-wrench.com<br><b>To:</b> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><h1>$5wrench Cloud Storage</h1><h2>So secure, they'll have to beat your secrets out of you!<sup title=\"https://xkcd.com/538/\"><a href=\"https://xkcd.com/538/\">[1]</a></sup></h2><div id=\"content\"><div id=\"content-email\"><h3>You've got mail!</h3><p><b>From:</b> support@five-dollar-wrench.com<br><b>To:</b> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
