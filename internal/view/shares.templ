@@ -3,9 +3,10 @@ package view
 import (
 	"github.com/edutko/crypto-fails/internal/auth"
     "github.com/edutko/crypto-fails/internal/view/component"
+	"github.com/edutko/crypto-fails/pkg/share"
 )
 
-templ MyShares(items [][]string, align []string) {
+templ MyShares(links []share.Link) {
 <!DOCTYPE html>
 <html>
 @component.Head()
@@ -24,19 +25,19 @@ if s := auth.GetCurrentSession(ctx); s != nil {
 <h3>My Shares</h3>
 <table id="shares-table">
 <thead>
-  <th class={align[0]}>File</th>
-  <th class={align[1]}>Expires</th>
+  <th class="left-justified">File</th>
+  <th class="centered">Expires</th>
   <th class="centered">Actions</th>
 </thead>
 <tbody>
-for _, row := range items {
-    <tr>
-        <td class={align[0]}>{row[0]}</td>
-        <td class={align[1]}>{row[1]}</td>
-        <td class="centered">
-        @component.CopyButton(row[2], row[3], "Copy link to clipboard")
-        </td>
-    </tr>
+for _, l := range links {
+  <tr>
+    <td class="left-justified">{l.Key}</td>
+    <td class="centered">{l.Expiration.Format("2006-01-02")}</td>
+    <td class="centered">
+      @component.CopyButton(l.Id, l.URL, "Copy link to clipboard")
+    </td>
+  </tr>
 }
 </tbody>
 </table>

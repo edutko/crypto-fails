@@ -21,14 +21,14 @@ func TestParseLink(t *testing.T) {
 		{"basic", values("key", "one/foo.txt", "exp", "1863795600", "sig", "5DPBGlO_GQrU-lH5DpfMdCMmHXy_2UdQvZCTsg24yBw"),
 			Link{Key: "one/foo.txt", Expiration: time.Unix(1863795600, 0).UTC(), Signature: "5DPBGlO_GQrU-lH5DpfMdCMmHXy_2UdQvZCTsg24yBw"}},
 		{"no expiration", values("key", "one/foo.txt"),
-			NewLink("one/foo.txt", time.Time{})},
+			Link{Key: "one/foo.txt", Expiration: time.Time{}}},
 		{"unsigned", values("key", "one/foo.txt", "exp", "1863795600"),
-			NewLink("one/foo.txt", time.Unix(1863795600, 0))},
+			Link{Key: "one/foo.txt", Expiration: time.Unix(1863795600, 0).UTC()}},
 
 		{"invalid exp", values("key", "one/foo.txt", "exp", "never"),
-			NewLink("one/foo.txt", time.Unix(0, 0))},
+			Link{Key: "one/foo.txt", Expiration: time.Unix(0, 0).UTC()}},
 		{"path traversal", values("key", "one/../two/foo.txt", "exp", "1863795600"),
-			NewLink("one/../two/foo.txt", time.Unix(1863795600, 0))},
+			Link{Key: "one/../two/foo.txt", Expiration: time.Unix(1863795600, 0).UTC()}},
 	}
 
 	for _, tc := range testCases {
@@ -62,6 +62,9 @@ func TestLink_QueryString(t *testing.T) {
 }
 
 func TestNewSignedLink(t *testing.T) {
+	now := time.Now().Truncate(time.Second)
+	timeNow = func() time.Time { return now }
+
 	secret := bytes.Repeat([]byte{0x55}, 32)
 	testCases := []struct {
 		name         string
@@ -70,9 +73,9 @@ func TestNewSignedLink(t *testing.T) {
 		expectedLink Link
 	}{
 		{"basic", "abc/123.txt", time.Unix(1863795600, 0),
-			Link{Key: "abc/123.txt", Expiration: time.Unix(1863795600, 0).UTC(), Signature: "GgoJOYB9kHcVl6ElbXP7lAFQLNdGVTCcZK-P67qkZmE"}},
+			Link{Key: "abc/123.txt", Expiration: time.Unix(1863795600, 0).UTC(), Signature: "GgoJOYB9kHcVl6ElbXP7lAFQLNdGVTCcZK-P67qkZmE", CreatedAt: now.UTC()}},
 		{"no expiration", "abc/123.txt", DoesNotExpire,
-			Link{Key: "abc/123.txt", Signature: "g55e9vBCXDdXwHVNq3gB7jmnwq4lgJKYbw_h1_I97oU"}},
+			Link{Key: "abc/123.txt", Signature: "g55e9vBCXDdXwHVNq3gB7jmnwq4lgJKYbw_h1_I97oU", CreatedAt: now.UTC()}},
 	}
 
 	for _, tc := range testCases {

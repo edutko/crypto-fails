@@ -16,7 +16,10 @@ type Link struct {
 	Key        string    `json:"key"`
 	Expiration time.Time `json:"expiration,omitempty"`
 	Signature  string    `json:"signature,omitempty"`
-	URL        string    `json:"url,omitempty"`
+
+	// These fields are excluded from signed links.
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	URL       string    `json:"url,omitempty"`
 }
 
 var (
@@ -31,15 +34,13 @@ var (
 func NewLink(key string, expiration time.Time) Link {
 	return Link{
 		Key:        key,
-		Expiration: expiration.UTC(),
+		CreatedAt:  timeNow().UTC().Truncate(time.Second),
+		Expiration: expiration.UTC().Truncate(time.Second),
 	}
 }
 
 func NewSignedLink(key string, expiration time.Time, secret []byte) Link {
-	l := Link{
-		Key:        key,
-		Expiration: expiration.UTC(),
-	}
+	l := NewLink(key, expiration)
 	sig := signLink(l, secret)
 	l.Signature = base64.RawURLEncoding.EncodeToString(sig)
 	return l

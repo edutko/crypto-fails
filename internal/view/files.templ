@@ -1,11 +1,14 @@
 package view
 
 import (
+	"fmt"
+
 	"github.com/edutko/crypto-fails/internal/auth"
     "github.com/edutko/crypto-fails/internal/view/component"
+	"github.com/edutko/crypto-fails/pkg/blob"
 )
 
-templ MyFiles(items [][]string, align []string) {
+templ MyFiles(files []blob.Metadata) {
 <!DOCTYPE html>
 <html>
 @component.Head()
@@ -24,22 +27,22 @@ if s := auth.GetCurrentSession(ctx); s != nil {
 <h3>My Files</h3>
 <table id="files-table">
 <thead>
-  <th class={align[0]}>Name</th>
-  <th class={align[1]}>Size</th>
-  <th class={align[2]}>Uploaded</th>
+  <th class="left-justified">Name</th>
+  <th class="right-justified">Size</th>
+  <th class="centered">Uploaded</th>
   <th class="centered">Actions</th>
 </thead>
 <tbody>
-for _, row := range items{
-    <tr>
-    for i, itm := range row {
-        <td class={align[i]}>{itm}</td>
-    }
-        <td class="centered">
-        <a href={templ.SafeURL("/download?key="+row[0])} class="link-button" title="Download">⬇︎</a>
-        @component.LinkButton("post", "/share", "➦", "Share", map[string]string{"key": row[0]})
-        </td>
-    </tr>
+for _, f := range files {
+  <tr>
+    <td class="left-justified">{f.Key}</td>
+    <td class="right-justified">{fmt.Sprintf("%d", f.Size)}</td>
+    <td class="centered">{f.Modified.Format("2006-01-02")}</td>
+    <td class="centered">
+      <a href={templ.SafeURL("/download?key="+f.Key)} class="link-button" title="Download">⬇︎</a>
+      @component.LinkButton("post", "/share", "➦", "Share", map[string]string{"key": f.Key})
+    </td>
+  </tr>
 }
 </tbody>
 </table>

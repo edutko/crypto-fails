@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"slices"
 	"strings"
 	"time"
 
@@ -25,16 +26,7 @@ func GetMyShares(w http.ResponseWriter, r *http.Request) {
 		responses.InternalServerError(w, err)
 
 	} else {
-		var tbl [][]string
-		for _, l := range links {
-			tbl = append(tbl, []string{
-				l.Key,
-				l.Expiration.Format("2006-01-02"),
-				l.Id,
-				l.URL,
-			})
-		}
-		responses.RenderView(w, r.Context(), view.MyShares(tbl, []string{"left-justified", "centered"}))
+		responses.RenderView(w, r.Context(), view.MyShares(links))
 	}
 }
 
@@ -125,6 +117,7 @@ func listShares(r *http.Request) ([]share.Link, error) {
 			URL:        buildURL(baseURL, l).String(),
 		})
 	}
+	slices.SortFunc(links, func(a, b share.Link) int { return b.CreatedAt.Compare(a.CreatedAt) })
 
 	return links, nil
 }

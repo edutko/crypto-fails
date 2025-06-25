@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/edutko/crypto-fails/internal/middleware"
@@ -23,21 +23,7 @@ func GetMyFiles(w http.ResponseWriter, r *http.Request) {
 		responses.InternalServerError(w, err)
 
 	} else {
-		var keys []string
-		m := make(map[string]blob.Metadata)
-		for _, f := range files {
-			keys = append(keys, f.Key)
-			m[f.Key] = f
-		}
-		sort.Strings(keys)
-
-		var tbl [][]string
-		for _, k := range keys {
-			itm := m[k]
-			tbl = append(tbl, []string{itm.Key, fmt.Sprintf("%d", itm.Size), itm.Modified.Format("2006-01-02")})
-		}
-
-		responses.RenderView(w, r.Context(), view.MyFiles(tbl, []string{"left-justified", "right-justified", "centered"}))
+		responses.RenderView(w, r.Context(), view.MyFiles(files))
 	}
 }
 
@@ -94,6 +80,7 @@ func listFiles(namespace string) ([]blob.Metadata, error) {
 	for i := range blobs {
 		blobs[i].Key = strings.TrimPrefix(blobs[i].Key, namespace+"/")
 	}
+	slices.SortFunc(blobs, func(a, b blob.Metadata) int { return strings.Compare(a.Key, b.Key) })
 
 	return blobs, nil
 }
