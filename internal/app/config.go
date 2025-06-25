@@ -13,7 +13,6 @@ import (
 )
 
 var cfg = app.Config{
-	ExternalURL:    "http://localhost:8080/",
 	ListenAddr:     "localhost:8080",
 	StorageRootDir: "data",
 	WebRootDir:     "web/static",
@@ -43,7 +42,6 @@ func LoadConfig() (app.Config, error) {
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	if listenAddr != "" {
 		cfg.ListenAddr = listenAddr
-		cfg.ExternalURL = (&url.URL{Scheme: "http:", Host: listenAddr, Path: "/"}).String()
 	}
 
 	externalURL := os.Getenv("EXTERNAL_URL")

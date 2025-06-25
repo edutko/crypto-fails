@@ -9,6 +9,9 @@ import (
 )
 
 func BaseURL() *url.URL {
+	if app.Config().ExternalURL == "" {
+		return nil
+	}
 	u, err := url.Parse(app.Config().ExternalURL)
 	if err != nil {
 		panic(err)

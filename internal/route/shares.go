@@ -21,15 +21,14 @@ import (
 )
 
 func GetMyShares(w http.ResponseWriter, r *http.Request) {
-	s := middleware.GetCurrentSession(r)
-	if links, err := listShares(s.Username); err != nil {
+	if links, err := listShares(r); err != nil {
 		responses.InternalServerError(w, err)
 
 	} else {
 		var tbl [][]string
 		for _, l := range links {
 			tbl = append(tbl, []string{
-				strings.TrimPrefix(l.Key, s.Username+"/"),
+				l.Key,
 				l.Expiration.Format("2006-01-02"),
 				l.Id,
 				l.URL,
@@ -57,8 +56,7 @@ func PostShare(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetShares(w http.ResponseWriter, r *http.Request) {
-	s := middleware.GetCurrentSession(r)
-	if links, err := listShares(s.Username); err != nil {
+	if links, err := listShares(r); err != nil {
 		responses.InternalServerError(w, err)
 	} else {
 		responses.JSON(w, api.SharesResponse{Links: links})
@@ -101,15 +99,20 @@ func newSignedLink(username, relativeKey string) (share.Link, error) {
 
 	err := stores.ShareStore().Put(path.Join(username, random.String(6)), l)
 
-	l.URL = buildURL(l).String()
 	return l, err
 }
 
-func listShares(username string) ([]share.Link, error) {
-	prefix := username + "/"
+func listShares(r *http.Request) ([]share.Link, error) {
+	s := middleware.GetCurrentSession(r)
+	prefix := s.Username + "/"
 	ids, err := stores.ShareStore().ListKeysWithPrefix(prefix)
 	if err != nil {
 		return nil, err
+	}
+
+	baseURL := config.BaseURL()
+	if baseURL == nil {
+		baseURL = &url.URL{Scheme: "http", Host: r.Host}
 	}
 
 	var links []share.Link
@@ -119,15 +122,15 @@ func listShares(username string) ([]share.Link, error) {
 			Id:         ids[i],
 			Key:        strings.TrimPrefix(l.Key, prefix),
 			Expiration: l.Expiration,
-			URL:        buildURL(l).String(),
+			URL:        buildURL(baseURL, l).String(),
 		})
 	}
 
 	return links, nil
 }
 
-func buildURL(l share.Link) *url.URL {
-	u := config.BaseURL().JoinPath("/download")
+func buildURL(baseURL *url.URL, l share.Link) *url.URL {
+	u := baseURL.JoinPath("download")
 	u.RawQuery = l.QueryString()
 	return u
 }
