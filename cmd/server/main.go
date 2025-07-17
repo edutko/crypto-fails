@@ -80,8 +80,8 @@ func main() {
 	mux.HandleFunc("POST /upload", m.Authenticated(route.PostUpload))
 
 	if conf.LeakEncryptedFiles {
-		fs := http.Dir(filepath.Join(conf.StorageRootDir, "files"))
-		mux.Handle("GET /vulns/leak/", http.StripPrefix("/vulns/leak/", http.FileServer(fs)))
+		fs := m.DirWithHiddenFiles(filepath.Join(conf.StorageRootDir, "files"))
+		mux.Handle("GET /vulns/leak/", http.StripPrefix("/vulns/leak/", http.FileServer(http.FS(fs))))
 	}
 	if conf.TweakEncryptedFiles {
 		mux.Handle("PUT /vulns/tweak/{key...}", http.StripPrefix("/vulns/tweak/", http.HandlerFunc(route.PutCiphertext)))
