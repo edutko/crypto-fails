@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/edutko/crypto-fails/internal/crypto"
 	"github.com/edutko/crypto-fails/internal/job"
 	"github.com/edutko/crypto-fails/internal/store/blob"
 	"github.com/edutko/crypto-fails/internal/store/kv"
@@ -13,7 +12,7 @@ import (
 	"github.com/edutko/crypto-fails/pkg/user"
 )
 
-func Initialize(storageRootDir string, encryptionMode crypto.Mode) error {
+func Initialize(storageRootDir string) error {
 	if err := os.MkdirAll(storageRootDir, 0755); err != nil {
 		return err
 	}

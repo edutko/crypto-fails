@@ -32,7 +32,7 @@ func main() {
 	app.LoadLicense(filepath.Join(conf.StorageRootDir, "license.json"))
 	random.SetWeakPRNG(conf.WeakPRNGAlgorithm)
 
-	if err := stores.Initialize(conf.StorageRootDir, conf.FileEncryptionMode); err != nil {
+	if err := stores.Initialize(conf.StorageRootDir); err != nil {
 		log.Fatal(err)
 	}
 	defer stores.Cleanup()
