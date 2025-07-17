@@ -20,7 +20,7 @@ func (u User) WithoutSecrets() User {
 	return u
 }
 
-var UsernamePattern = regexp.MustCompile("^[-a-zA-Z0-9._@+]+$")
+var UsernamePattern = regexp.MustCompile("^[a-zA-Z0-9][-a-zA-Z0-9._@+]*$")
 
 // https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
 // Invalid filename characters on Windows:
