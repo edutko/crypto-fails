@@ -16,8 +16,8 @@ templ MyShares(links []share.Link) {
 
 <div id="content">
 <div id="navbar">
-if s := auth.GetCurrentSession(ctx); s != nil {
-@component.SideMenu(*s)
+if s := auth.GetSessionFromContext(ctx); s.IsAuthenticated() {
+@component.SideMenu(s)
 }
 </div>
 

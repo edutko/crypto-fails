@@ -21,7 +21,7 @@ var (
 )
 
 func NewCookie(username, realName string, duration time.Duration, roles []string) (*http.Cookie, error) {
-	s := &Session{
+	s := Session{
 		Username: username,
 		IsAdmin:  slices.Contains(roles, role.Admin),
 		RealName: realName,
@@ -47,18 +47,18 @@ func NewCookie(username, realName string, duration time.Duration, roles []string
 	}, nil
 }
 
-func ParseCookie(c *http.Cookie) (*Session, error) {
+func ParseCookie(c *http.Cookie) (Session, error) {
 	if IsSessionRevoked(c.Value) {
-		return nil, nil
+		return anonymousSession, nil
 	}
 
 	ciphertext, err := hex.DecodeString(c.Value)
 	if err != nil {
-		return nil, ErrInvalidCookie
+		return anonymousSession, ErrInvalidCookie
 	}
 
 	if len(ciphertext) < aes.BlockSize*2 || len(ciphertext)%aes.BlockSize != 0 {
-		return nil, ErrInvalidCookie
+		return anonymousSession, ErrInvalidCookie
 	}
 
 	iv := ciphertext[:aes.BlockSize]
@@ -70,7 +70,7 @@ func ParseCookie(c *http.Cookie) (*Session, error) {
 
 	plaintext, err = pkcs7.Unpad(plaintext, aes.BlockSize)
 	if err != nil {
-		return nil, ErrInvalidCookie
+		return anonymousSession, ErrInvalidCookie
 	}
 
 	return ParseSession(string(plaintext)), nil

@@ -56,17 +56,17 @@ func TestParseCookie(t *testing.T) {
 	testCases := []struct {
 		name            string
 		cookieValue     string
-		expectedSession *Session
+		expectedSession Session
 		expectedErr     error
 	}{
-		{"minimal", encrypt("adm=false&uid=alice"), &Session{Username: "alice"}, nil},
-		{"maximal", encrypt("adm=true&name=root&uid=admin"), &Session{Username: "admin", IsAdmin: true, RealName: "root"}, nil},
-		{"empty", encrypt(""), &Session{}, nil},
-		{"revoked", revoked, nil, nil},
+		{"minimal", encrypt("adm=false&uid=alice"), Session{Username: "alice"}, nil},
+		{"maximal", encrypt("adm=true&name=root&uid=admin"), Session{Username: "admin", IsAdmin: true, RealName: "root"}, nil},
+		{"empty", encrypt(""), anonymousSession, nil},
+		{"revoked", revoked, anonymousSession, nil},
 
-		{"invalid hex", "oopsie!", nil, ErrInvalidCookie},
-		{"invalid length", "0123456789abcd", nil, ErrInvalidCookie},
-		{"invalid padding", corrupted("some plaintext"), nil, ErrInvalidCookie},
+		{"invalid hex", "oopsie!", anonymousSession, ErrInvalidCookie},
+		{"invalid length", "0123456789abcd", anonymousSession, ErrInvalidCookie},
+		{"invalid padding", corrupted("some plaintext"), anonymousSession, ErrInvalidCookie},
 	}
 
 	for _, tc := range testCases {
@@ -78,11 +78,10 @@ func TestParseCookie(t *testing.T) {
 
 			if tc.expectedErr == nil {
 				assert.NoError(t, err)
-				assert.Equal(t, tc.expectedSession, actual)
 			} else {
-				assert.Equal(t, ErrInvalidCookie, err)
-				assert.Nil(t, actual)
+				assert.ErrorIs(t, err, ErrInvalidCookie)
 			}
+			assert.Equal(t, tc.expectedSession, actual)
 		})
 	}
 }

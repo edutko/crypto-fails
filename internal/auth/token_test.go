@@ -83,22 +83,22 @@ func TestParseToken(t *testing.T) {
 	testCases := []struct {
 		name            string
 		token           string
-		expectedSession *Session
+		expectedSession Session
 		expectedErr     error
 	}{
-		{"minimal", testToken(t, "alice", "", nil), &Session{Username: "alice"}, nil},
+		{"minimal", testToken(t, "alice", "", nil), Session{Username: "alice"}, nil},
 		{"maximal", testToken(t, "bob", "Bob Robertson", []string{"admin"}),
-			&Session{Username: "bob", RealName: "Bob Robertson", IsAdmin: true}, nil},
+			Session{Username: "bob", RealName: "Bob Robertson", IsAdmin: true}, nil},
 		{"HS256", testTokenWithHeader(t, "eve", map[string]any{"alg": "HS256", "kid": "1"}, k1),
-			&Session{Username: "eve"}, nil},
+			Session{Username: "eve"}, nil},
 		{"ES256", testTokenWithHeader(t, "eve", map[string]any{"alg": "ES256", "kid": "2"}, kEC1),
-			&Session{Username: "eve"}, nil},
+			Session{Username: "eve"}, nil},
 
-		{"revoked", expiredToken(t, "eric"), nil, nil},
-		{"revoked", revokedToken, nil, nil},
-		{"bad signature", testTokenWithHeader(t, "eve", nil, k1), nil, ErrInvalidToken},
+		{"revoked", expiredToken(t, "eric"), anonymousSession, nil},
+		{"revoked", revokedToken, anonymousSession, nil},
+		{"bad signature", testTokenWithHeader(t, "eve", nil, k1), anonymousSession, ErrInvalidToken},
 
-		{"alg:none", testTokenWithHeader(t, "eve", map[string]any{"alg": "none"}, nil), &Session{Username: "eve"}, nil},
+		{"alg:none", testTokenWithHeader(t, "eve", map[string]any{"alg": "none"}, nil), Session{Username: "eve"}, nil},
 		{"jwk:rsa",
 			testTokenWithHeader(t, "eve", map[string]any{"alg": "RS256", "kid": "2", "jwk": map[string]any{
 				"kid": "2",
@@ -106,16 +106,16 @@ func TestParseToken(t *testing.T) {
 				"n":   b64Encode(kRSA1.N.Bytes()),
 				"kty": "RSA",
 			}}, kRSA1),
-			&Session{Username: "eve"}, nil},
+			Session{Username: "eve"}, nil},
 		{"jwk:hmac",
 			testTokenWithHeader(t, "eve", map[string]any{"alg": "HS256", "kid": "1", "jwk": map[string]any{
 				"kid": "1",
 				"k":   b64Encode(k2),
 				"kty": "oct",
 			}}, k2),
-			&Session{Username: "eve"}, nil},
+			Session{Username: "eve"}, nil},
 		{"jku", testTokenWithHeader(t, "eve", map[string]any{"alg": "RS256", "kid": "3", "jku": "http://localhost:9999/jwks"}, kRSA1),
-			&Session{Username: "eve"}, nil},
+			Session{Username: "eve"}, nil},
 	}
 
 	RevokeSession(revokedToken)

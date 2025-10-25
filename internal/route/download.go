@@ -24,7 +24,7 @@ func GetDownload(w http.ResponseWriter, r *http.Request) {
 	s := middleware.GetCurrentSession(r)
 	l := share.ParseLink(r.URL.Query())
 	err := l.Verify(auth.GetShareLinkSecret())
-	if errors.Is(err, share.ErrNoSignature) && s != nil {
+	if errors.Is(err, share.ErrNoSignature) && s.IsAuthenticated() {
 		// unsigned links are valid for a user's own files and are relative to the user's namespace
 		if strings.HasPrefix(path.Join(s.Username, l.Key), s.Username+"/") {
 			downloadFile(s.Username, l.Key, w)

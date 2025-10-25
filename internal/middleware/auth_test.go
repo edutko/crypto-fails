@@ -13,7 +13,7 @@ import (
 )
 
 func TestGetCurrentSession(t *testing.T) {
-	expected := &auth.Session{Username: "test"}
+	expected := auth.Session{Username: "test"}
 	r := &http.Request{}
 	r = r.WithContext(context.WithValue(context.Background(), "session", expected))
 
@@ -26,38 +26,28 @@ func TestAuthenticated(t *testing.T) {
 	testCases := []struct {
 		name               string
 		req                *http.Request
-		sess               *auth.Session
+		sess               auth.Session
 		err                error
 		expectedStatusCode int
 	}{
 		{"valid cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, &auth.Session{Username: "test"}, nil, 200,
+			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, auth.Session{Username: "test"}, nil, 200,
 		},
 		{"valid token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, &auth.Session{Username: "test"}, nil, 200,
+			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, auth.Session{Username: "test"}, nil, 200,
 		},
-		{"error parsing cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, nil, auth.ErrInvalidCookie, 400,
-		},
-		{"error parsing token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, nil, auth.ErrInvalidToken, 400,
-		},
-		{"invalid cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, nil, nil, 401,
-		},
-		{"invalid token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, nil, nil, 401,
+		{"no cookie or token",
+			&http.Request{}, auth.Session{}, nil, 401,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			parseCookie = func(c *http.Cookie) (*auth.Session, error) { return tc.sess, tc.err }
-			parseToken = func(token string) (*auth.Session, error) { return tc.sess, tc.err }
+			getSessionFromRequest = func(r *http.Request) (auth.Session, error) { return tc.sess, tc.err }
 			w := httptest.NewRecorder()
 
 			var m mockHandler
-			if tc.sess != nil {
+			if tc.sess.IsAuthenticated() {
 				m.On("handle", w, tc.req.WithContext(auth.ContextWithSession(tc.req.Context(), tc.sess)))
 			}
 
@@ -73,40 +63,25 @@ func TestMaybeAuthenticated(t *testing.T) {
 	testCases := []struct {
 		name string
 		req  *http.Request
-		sess *auth.Session
+		sess auth.Session
 		err  error
 	}{
 		{"valid cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, &auth.Session{Username: "test"}, nil,
+			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, auth.Session{Username: "test"}, nil,
 		},
 		{"valid token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, &auth.Session{Username: "test"}, nil,
-		},
-		{"missing cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{}}}, nil, nil,
-		},
-		{"missing token",
-			&http.Request{Header: http.Header{}}, nil, nil,
-		},
-		{"invalid cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, nil, auth.ErrInvalidCookie,
-		},
-		{"invalid token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, nil, auth.ErrInvalidToken,
+			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, auth.Session{Username: "test"}, nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			parseCookie = func(c *http.Cookie) (*auth.Session, error) { return tc.sess, tc.err }
-			parseToken = func(token string) (*auth.Session, error) { return tc.sess, tc.err }
+			getSessionFromRequest = func(r *http.Request) (auth.Session, error) { return tc.sess, tc.err }
 			w := httptest.NewRecorder()
 
 			var m mockHandler
-			if tc.sess != nil {
+			if tc.sess.IsAuthenticated() {
 				m.On("handle", w, tc.req.WithContext(auth.ContextWithSession(tc.req.Context(), tc.sess)))
-			} else {
-				m.On("handle", w, tc.req)
 			}
 
 			MaybeAuthenticated(m.handle)(w, tc.req)
@@ -120,28 +95,30 @@ func TestRequireAdmin(t *testing.T) {
 	testCases := []struct {
 		name               string
 		req                *http.Request
-		sess               *auth.Session
+		sess               auth.Session
 		err                error
 		expectedStatusCode int
 	}{
 		{"admin cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, &auth.Session{Username: "test", IsAdmin: true}, nil, 200,
+			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, auth.Session{Username: "test", IsAdmin: true}, nil, 200,
 		},
 		{"admin token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, &auth.Session{Username: "test", IsAdmin: true}, nil, 200,
+			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, auth.Session{Username: "test", IsAdmin: true}, nil, 200,
 		},
 		{"non-admin cookie",
-			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, &auth.Session{Username: "test"}, nil, 403,
+			&http.Request{Header: http.Header{"Cookie": []string{"auth=test"}}}, auth.Session{Username: "test"}, nil, 403,
 		},
 		{"non-admin token",
-			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, &auth.Session{Username: "test"}, nil, 403,
+			&http.Request{Header: http.Header{"Authorization": []string{"Bearer test"}}}, auth.Session{Username: "test"}, nil, 403,
+		},
+		{"no cookie or token",
+			&http.Request{}, auth.Session{}, nil, 401,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			parseCookie = func(c *http.Cookie) (*auth.Session, error) { return tc.sess, tc.err }
-			parseToken = func(token string) (*auth.Session, error) { return tc.sess, tc.err }
+			getSessionFromRequest = func(r *http.Request) (auth.Session, error) { return tc.sess, tc.err }
 			w := httptest.NewRecorder()
 
 			var m mockHandler

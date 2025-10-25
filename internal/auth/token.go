@@ -44,9 +44,9 @@ func NewToken(username, realName string, roles []string) (string, error) {
 	return token.SignedString(defaultJWTSigningKey())
 }
 
-func ParseToken(tokenString string) (*Session, error) {
+func ParseToken(tokenString string) (Session, error) {
 	if IsSessionRevoked(tokenString) {
-		return nil, nil
+		return anonymousSession, nil
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &customClaims{}, getKey,
@@ -54,21 +54,21 @@ func ParseToken(tokenString string) (*Session, error) {
 		jwt.WithLeeway(time.Second*30),
 	)
 	if errors.Is(err, jwt.ErrTokenInvalidClaims) {
-		return nil, nil
+		return anonymousSession, nil
 	}
 	if err != nil {
-		return nil, ErrInvalidToken
+		return anonymousSession, ErrInvalidToken
 	}
 
 	if claims, ok := token.Claims.(*customClaims); ok {
-		return &Session{
+		return Session{
 			Username: claims.Subject,
 			IsAdmin:  claims.IsAdmin,
 			RealName: claims.RealName,
 		}, nil
 	}
 
-	return nil, ErrInvalidToken
+	return anonymousSession, ErrInvalidToken
 }
 
 func getKey(token *jwt.Token) (interface{}, error) {

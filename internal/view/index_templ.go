@@ -46,12 +46,12 @@ func Index() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if s := auth.GetCurrentSession(ctx); s != nil {
+		if s := auth.GetSessionFromContext(ctx); s.IsAuthenticated() {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div id=\"navbar\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = component.SideMenu(*s).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = component.SideMenu(s).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -64,7 +64,7 @@ func Index() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if s := auth.GetCurrentSession(ctx); s == nil {
+		if s := auth.GetSessionFromContext(ctx); !s.IsAuthenticated() {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div id=\"content-right\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

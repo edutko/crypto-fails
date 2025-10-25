@@ -47,8 +47,8 @@ func MyShares(links []share.Link) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if s := auth.GetCurrentSession(ctx); s != nil {
-			templ_7745c5c3_Err = component.SideMenu(*s).Render(ctx, templ_7745c5c3_Buffer)
+		if s := auth.GetSessionFromContext(ctx); s.IsAuthenticated() {
+			templ_7745c5c3_Err = component.SideMenu(s).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
