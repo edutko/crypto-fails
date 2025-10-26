@@ -33,7 +33,7 @@ func GetDownload(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else if errors.Is(err, share.ErrInvalidSignature) || errors.Is(err, share.ErrExpired) {
-		responses.Forbidden(w, fmt.Errorf("invalid share link for %q", r.PathValue("key")))
+		responses.Forbidden(w, fmt.Errorf("invalid share link for %q", l.Key))
 
 	} else if err != nil {
 		responses.BadRequest(w, err)
