@@ -22,7 +22,7 @@ templ: $(TEMPL_FILES)
 	go tool github.com/a-h/templ/cmd/templ generate ./internal/view/...
 
 $(OUT)/license-tool: tools/license-tool $(GO_INTERNAL_FILES) $(GO_PKG_FILES)
-	CGO_ENABLED=0 go build -o $@ ./tools/license-tool
+	CGO_ENABLED=0 go build -tags osusergo,netgo -o $@ ./tools/license-tool
 
 $(OUT)/server: cmd/server/main.go $(GO_INTERNAL_FILES) $(GO_PKG_FILES)
-	CGO_ENABLED=0 go build -ldflags "-X $(REPO)/internal/app.Version=$(VERSION)" -o $@ ./cmd/server
+	CGO_ENABLED=0 go build -ldflags "-X $(REPO)/internal/app.Version=$(VERSION)" -tags osusergo,netgo -o $@ ./cmd/server
